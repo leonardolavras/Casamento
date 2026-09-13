@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
-import { supabase } from "../lib/supabase";
+import { isSupabaseConfigured, supabase } from "../lib/supabase";
 import type { EnxovalItem, EnxovalItemInput } from "../types/enxoval";
+
+const CONFIG_ERROR =
+  "Supabase não configurado. Copie .env.example para .env, preencha com as credenciais do seu projeto e reinicie o servidor (npm run dev).";
 
 interface UseEnxovalItemsResult {
   items: EnxovalItem[];
@@ -18,6 +21,12 @@ export function useEnxovalItems(): UseEnxovalItemsResult {
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
+    if (!isSupabaseConfigured) {
+      setError(CONFIG_ERROR);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     const { data, error: fetchError } = await supabase
@@ -39,6 +48,7 @@ export function useEnxovalItems(): UseEnxovalItemsResult {
 
   const addItem = useCallback(
     async (input: EnxovalItemInput) => {
+      if (!isSupabaseConfigured) throw new Error(CONFIG_ERROR);
       const { error: insertError } = await supabase
         .from("enxoval_itens")
         .insert(input);
@@ -50,6 +60,7 @@ export function useEnxovalItems(): UseEnxovalItemsResult {
 
   const updateItem = useCallback(
     async (id: string, input: Partial<EnxovalItemInput>) => {
+      if (!isSupabaseConfigured) throw new Error(CONFIG_ERROR);
       const { error: updateError } = await supabase
         .from("enxoval_itens")
         .update(input)
@@ -62,6 +73,7 @@ export function useEnxovalItems(): UseEnxovalItemsResult {
 
   const removeItem = useCallback(
     async (id: string) => {
+      if (!isSupabaseConfigured) throw new Error(CONFIG_ERROR);
       const { error: deleteError } = await supabase
         .from("enxoval_itens")
         .delete()
