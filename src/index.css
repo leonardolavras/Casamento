@@ -1,0 +1,60 @@
+:root {
+  --bg-paper: #f7f5f0;
+  --bg-alt: #f0ede6;
+  --ink: #2a2a2a;
+  --ink-soft: #666;
+  --gold: #c5a059;
+  --gold-soft: rgba(197, 160, 89, 0.2);
+  --white: #fff;
+
+  --font-serif: "Cormorant Garamond", serif;
+  --font-sans: "Montserrat", system-ui, sans-serif;
+  --font-script: "Pinyon Script", cursive;
+
+  font: 16px/145% var(--font-sans);
+  color-scheme: light;
+  color: var(--ink);
+  background: var(--bg-paper);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100svh;
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+p {
+  margin: 0;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-paper);
+}
+::-webkit-scrollbar-thumb {
+  background-color: var(--gold);
+  border-radius: 20px;
+  border: 2px solid var(--bg-paper);
+}

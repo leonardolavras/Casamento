@@ -1,0 +1,50 @@
+.reason-container {
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 20px;
+}
+
+.reason-box {
+  min-height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--white);
+  padding: 40px;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  margin-bottom: 30px;
+  border: 1px solid var(--gold-soft);
+}
+
+.reason-text {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-style: italic;
+  line-height: 1.6;
+  transition: opacity 0.3s;
+}
+
+.reason-text--fading {
+  opacity: 0;
+}
+
+.reason-btn {
+  background: transparent;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  padding: 12px 30px;
+  font-family: var(--font-sans);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: 0.3s;
+  border-radius: 50px;
+  font-size: 0.8rem;
+}
+
+.reason-btn:hover {
+  background: var(--gold);
+  color: var(--white);
+}
