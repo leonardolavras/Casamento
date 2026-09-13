@@ -7,6 +7,12 @@ export const ENXOVAL_STATUS_LABEL: Record<EnxovalStatus, string> = {
   precisamos: "Precisamos",
 };
 
+export const ENXOVAL_STATUS_LABEL_CURTO: Record<EnxovalStatus, string> = {
+  temos: "Temos",
+  queremos: "Queremos",
+  precisamos: "Precisamos",
+};
+
 export const ENXOVAL_CATEGORIAS = [
   "Cozinha",
   "Quarto",
@@ -20,6 +26,19 @@ export const ENXOVAL_CATEGORIAS = [
   "Outros",
 ] as const;
 export type EnxovalCategoria = (typeof ENXOVAL_CATEGORIAS)[number];
+
+export const ENXOVAL_CATEGORIA_ICONE: Record<EnxovalCategoria, string> = {
+  Cozinha: "🍳",
+  Quarto: "🛏️",
+  Banheiro: "🛁",
+  "Área de Serviço": "🧺",
+  Farmácia: "💊",
+  "Emergências Domésticas": "🧰",
+  Sala: "🛋️",
+  Decoração: "🎀",
+  Eletrodomésticos: "🔌",
+  Outros: "📦",
+};
 
 export const ENXOVAL_PRIORIDADES = ["baixa", "media", "alta"] as const;
 export type EnxovalPrioridade = (typeof ENXOVAL_PRIORIDADES)[number];
