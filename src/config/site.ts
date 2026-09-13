@@ -6,10 +6,40 @@ export const COUPLE = {
 };
 
 // Data do casamento (ano, mês [0-11], dia, hora, minuto).
-// TODO: substituir pela data real do casamento.
-export const WEDDING_DATE = new Date(2027, 5, 20, 16, 0, 0);
+export const WEDDING_DATE = new Date(2028, 2, 11, 16, 0, 0);
 
 export const HERO_PHOTO = "/fotos/capa.jpg";
+
+// Informações do evento — edite com local, endereço e horários reais assim
+// que estiverem definidos.
+export interface EventoInfo {
+  titulo: string;
+  data: string;
+  hora: string;
+  local: string;
+  endereco: string;
+  mapaUrl: string | null;
+}
+
+export const CERIMONIA: EventoInfo = {
+  titulo: "Cerimônia",
+  data: "11 de março de 2028",
+  hora: "16h (a confirmar)",
+  local: "Local a definir",
+  endereco: "Endereço a definir",
+  mapaUrl: null,
+};
+
+export const RECEPCAO: EventoInfo = {
+  titulo: "Recepção",
+  data: "11 de março de 2028",
+  hora: "Logo após a cerimônia",
+  local: "Local a definir",
+  endereco: "Endereço a definir",
+  mapaUrl: null,
+};
+
+export const DRESS_CODE = "Traje social. Cores a evitar: branco.";
 
 export const GALLERY_PHOTOS: { src: string; caption: string }[] = [
   { src: "/fotos/foto1.jpeg", caption: "Um momento nosso" },

@@ -18,8 +18,6 @@ export const ENXOVAL_CATEGORIAS = [
   "Quarto",
   "Banheiro",
   "Área de Serviço",
-  "Farmácia",
-  "Emergências Domésticas",
   "Sala",
   "Decoração",
   "Eletrodomésticos",
@@ -32,8 +30,6 @@ export const ENXOVAL_CATEGORIA_ICONE: Record<EnxovalCategoria, string> = {
   Quarto: "🛏️",
   Banheiro: "🛁",
   "Área de Serviço": "🧺",
-  Farmácia: "💊",
-  "Emergências Domésticas": "🧰",
   Sala: "🛋️",
   Decoração: "🎀",
   Eletrodomésticos: "🔌",
@@ -52,6 +48,7 @@ export type EnxovalItem = {
   prioridade: EnxovalPrioridade;
   preco_estimado: number | null;
   link: string | null;
+  imagem_url: string | null;
   observacoes: string | null;
   created_at: string;
   updated_at: string;

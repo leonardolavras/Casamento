@@ -1,0 +1,43 @@
+.enxoval-cta {
+  max-width: 560px;
+  margin: 0 auto;
+  text-align: center;
+  background: var(--white);
+  border: 1px solid var(--gold-soft);
+  border-radius: 16px;
+  padding: 2.5rem 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+.enxoval-cta__emoji {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.enxoval-cta h2 {
+  font-size: 1.6rem;
+  margin-bottom: 0.75rem;
+}
+
+.enxoval-cta p {
+  color: var(--ink-soft);
+  margin-bottom: 1.5rem;
+}
+
+.enxoval-cta__botao {
+  display: inline-block;
+  background: var(--gold);
+  color: var(--white);
+  text-decoration: none;
+  padding: 0.7rem 1.8rem;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  transition: 0.2s;
+}
+
+.enxoval-cta__botao:hover {
+  filter: brightness(0.95);
+}

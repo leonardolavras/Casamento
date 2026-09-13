@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import {
   ENXOVAL_CATEGORIAS,
   ENXOVAL_PRIORIDADES,
@@ -9,6 +9,7 @@ import {
   type EnxovalPrioridade,
   type EnxovalStatus,
 } from "../../types/enxoval";
+import { uploadEnxovalFoto } from "../../lib/uploadEnxovalFoto";
 
 interface EnxovalFormProps {
   onSubmit: (input: EnxovalItemInput) => Promise<void>;
@@ -22,21 +23,47 @@ const initialState: EnxovalItemInput = {
   prioridade: "media",
   preco_estimado: null,
   link: null,
+  imagem_url: null,
   observacoes: null,
 };
 
 export function EnxovalForm({ onSubmit }: EnxovalFormProps) {
   const [form, setForm] = useState<EnxovalItemInput>(initialState);
+  const [fotoFile, setFotoFile] = useState<File | null>(null);
+  const [fotoPreview, setFotoPreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!fotoFile) {
+      setFotoPreview(null);
+      return;
+    }
+    const url = URL.createObjectURL(fotoFile);
+    setFotoPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [fotoFile]);
+
+  function handleFotoChange(event: ChangeEvent<HTMLInputElement>) {
+    setFotoFile(event.target.files?.[0] ?? null);
+  }
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     if (!form.nome.trim()) return;
 
     setSubmitting(true);
+    setErro(null);
     try {
-      await onSubmit(form);
+      let imagem_url = form.imagem_url;
+      if (fotoFile) {
+        imagem_url = await uploadEnxovalFoto(fotoFile);
+      }
+      await onSubmit({ ...form, imagem_url });
       setForm(initialState);
+      setFotoFile(null);
+    } catch (err) {
+      setErro(err instanceof Error ? err.message : "Erro ao adicionar item.");
     } finally {
       setSubmitting(false);
     }
@@ -44,6 +71,16 @@ export function EnxovalForm({ onSubmit }: EnxovalFormProps) {
 
   return (
     <form className="enxoval-form" onSubmit={handleSubmit}>
+      <label className="enxoval-form__full enxoval-form__foto">
+        Foto do item (opcional)
+        <div className="enxoval-form__foto-picker">
+          {fotoPreview && (
+            <img src={fotoPreview} alt="" className="enxoval-form__foto-preview" />
+          )}
+          <input type="file" accept="image/*" onChange={handleFotoChange} />
+        </div>
+      </label>
+
       <label className="enxoval-form__full">
         Nome do item
         <input
@@ -161,6 +198,8 @@ export function EnxovalForm({ onSubmit }: EnxovalFormProps) {
           />
         </label>
       </div>
+
+      {erro && <p className="enxoval-form__erro">{erro}</p>}
 
       <button
         type="submit"

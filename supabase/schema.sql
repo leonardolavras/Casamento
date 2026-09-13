@@ -12,10 +12,16 @@ create table if not exists public.enxoval_itens (
     check (prioridade in ('baixa', 'media', 'alta')),
   preco_estimado numeric(10, 2),
   link text,
+  imagem_url text,
   observacoes text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+-- Caso a tabela já exista de uma execução anterior deste script, garante
+-- que a coluna de imagem também seja criada.
+alter table public.enxoval_itens
+  add column if not exists imagem_url text;
 
 -- Mantém updated_at sempre atualizado
 create or replace function public.set_updated_at()
@@ -47,3 +53,28 @@ create policy "Enxoval: escrita publica"
   on public.enxoval_itens for all
   using (true)
   with check (true);
+
+-- Bucket de armazenamento para as fotos dos itens do enxoval.
+insert into storage.buckets (id, name, public)
+values ('enxoval-fotos', 'enxoval-fotos', true)
+on conflict (id) do nothing;
+
+drop policy if exists "Enxoval fotos: leitura publica" on storage.objects;
+create policy "Enxoval fotos: leitura publica"
+  on storage.objects for select
+  using (bucket_id = 'enxoval-fotos');
+
+drop policy if exists "Enxoval fotos: upload publico" on storage.objects;
+create policy "Enxoval fotos: upload publico"
+  on storage.objects for insert
+  with check (bucket_id = 'enxoval-fotos');
+
+drop policy if exists "Enxoval fotos: update publico" on storage.objects;
+create policy "Enxoval fotos: update publico"
+  on storage.objects for update
+  using (bucket_id = 'enxoval-fotos');
+
+drop policy if exists "Enxoval fotos: delete publico" on storage.objects;
+create policy "Enxoval fotos: delete publico"
+  on storage.objects for delete
+  using (bucket_id = 'enxoval-fotos');
