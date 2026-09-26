@@ -1,0 +1,38 @@
+.marquee {
+  overflow: hidden;
+  padding: 2px 0;
+  background: var(--ink);
+}
+
+.marquee__track {
+  display: flex;
+  gap: 4px;
+  width: max-content;
+  animation: marquee-scroll 40s linear infinite;
+}
+
+.marquee__img {
+  height: 280px;
+  width: auto;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  flex-shrink: 0;
+  filter: grayscale(0.15);
+  transition: filter 0.4s;
+}
+
+.marquee__img:hover {
+  filter: grayscale(0);
+}
+
+@keyframes marquee-scroll {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (max-width: 720px) {
+  .marquee__img {
+    height: 200px;
+  }
+}

@@ -1,20 +1,53 @@
 .navbar {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 100;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.9rem 1.75rem;
-  background: rgba(251, 247, 241, 0.88);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--line);
+  padding: 1.1rem 2rem;
+  transition: background-color 0.4s, border-color 0.4s, backdrop-filter 0.4s;
+  border-bottom: 1px solid transparent;
+}
+
+.navbar--solid {
+  background: rgba(251, 247, 241, 0.92);
+  backdrop-filter: blur(12px);
+  border-bottom-color: var(--line);
+}
+
+.navbar--transparent {
+  background: transparent;
+  backdrop-filter: none;
+}
+
+.navbar--transparent .navbar__monogram {
+  border-color: rgba(255, 255, 255, 0.4);
+  color: var(--white);
+}
+
+.navbar--transparent .navbar__monogram em {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.navbar--transparent .navbar__link {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.navbar--transparent .navbar__link:hover,
+.navbar--transparent .navbar__link--active {
+  color: var(--white);
+}
+
+.navbar--transparent .navbar__toggle span {
+  background: var(--white);
 }
 
 .navbar__brand {
   display: flex;
   align-items: center;
-  gap: 0.7rem;
   text-decoration: none;
   color: var(--ink);
 }
@@ -22,37 +55,31 @@
 .navbar__monogram {
   display: flex;
   align-items: baseline;
-  gap: 0.15rem;
+  gap: 0.1rem;
   font-family: var(--font-serif);
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   font-weight: 500;
   color: var(--ink);
   border: 1px solid var(--line);
   border-radius: 50%;
-  width: 2.35rem;
-  height: 2.35rem;
+  width: 2.4rem;
+  height: 2.4rem;
   justify-content: center;
   flex-shrink: 0;
+  transition: color 0.4s, border-color 0.4s;
 }
 
 .navbar__monogram em {
   font-style: normal;
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   color: var(--accent);
-  margin: 0 -0.05rem;
-}
-
-.navbar__names {
-  font-size: 0.78rem;
-  font-weight: 500;
-  letter-spacing: 0.4px;
-  color: var(--ink-soft);
-  white-space: nowrap;
+  margin: 0 -0.03rem;
+  transition: color 0.4s;
 }
 
 .navbar__links {
   display: flex;
-  gap: 1.75rem;
+  gap: 2rem;
 }
 
 .navbar__links--desktop {
@@ -60,14 +87,14 @@
 }
 
 .navbar__link {
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   text-transform: uppercase;
-  letter-spacing: 1.5px;
+  letter-spacing: 2px;
   color: var(--ink-soft);
   text-decoration: none;
-  padding-bottom: 3px;
+  padding-bottom: 2px;
   border-bottom: 1px solid transparent;
-  transition: color 0.2s;
+  transition: color 0.3s, border-color 0.3s;
 }
 
 .navbar__link:hover {
@@ -84,8 +111,8 @@
   flex-direction: column;
   justify-content: center;
   gap: 5px;
-  width: 2.2rem;
-  height: 2.2rem;
+  width: 2rem;
+  height: 2rem;
   border: none;
   background: none;
   cursor: pointer;
@@ -96,7 +123,7 @@
   display: block;
   height: 1px;
   background: var(--ink);
-  transition: transform 0.25s ease, opacity 0.25s ease;
+  transition: transform 0.3s ease, opacity 0.3s ease, background-color 0.4s;
 }
 
 .navbar__toggle--open span:first-child {
@@ -109,34 +136,43 @@
 
 .navbar__mobile {
   position: fixed;
-  top: 3.7rem;
+  top: 0;
   left: 0;
   right: 0;
+  bottom: 0;
   display: flex;
   flex-direction: column;
-  gap: 0;
-  background: var(--paper);
-  border-bottom: 1px solid var(--line);
-  transform: translateY(-8px);
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  background: var(--ink);
   opacity: 0;
   pointer-events: none;
-  transition: transform 0.2s ease, opacity 0.2s ease;
+  transition: opacity 0.35s ease;
+  z-index: -1;
 }
 
 .navbar__mobile--open {
-  transform: translateY(0);
   opacity: 1;
   pointer-events: auto;
 }
 
 .navbar__mobile .navbar__link {
-  padding: 1rem 1.75rem;
-  border-bottom: 1px solid var(--line);
+  font-size: 1.1rem;
+  letter-spacing: 3px;
+  color: rgba(255, 255, 255, 0.7);
+  border-bottom: none;
+  padding: 0;
+}
+
+.navbar__mobile .navbar__link:hover,
+.navbar__mobile .navbar__link--active {
+  color: var(--white);
 }
 
 @media (min-width: 720px) {
   .navbar {
-    padding: 1.1rem 2.5rem;
+    padding: 1.2rem 3rem;
   }
 
   .navbar__links--desktop {

@@ -1,154 +1,156 @@
 .hero {
   position: relative;
-  min-height: 100svh;
+  height: 100svh;
   display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
+  color: var(--white);
 }
 
-.hero__media {
+.hero__bg {
   position: absolute;
-  inset: -20% 0 0 0;
+  inset: -15% 0 0 0;
   z-index: 0;
   will-change: transform;
 }
 
-.hero__media img {
+.hero__bg img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center 30%;
 }
 
-.hero__scrim {
+.hero__overlay {
   position: absolute;
   inset: 0;
   z-index: 1;
   background: linear-gradient(
-    to top,
-    rgba(20, 17, 14, 0.88) 0%,
-    rgba(20, 17, 14, 0.4) 40%,
-    rgba(20, 17, 14, 0.08) 80%
+    180deg,
+    rgba(20, 17, 14, 0.25) 0%,
+    rgba(20, 17, 14, 0.45) 50%,
+    rgba(20, 17, 14, 0.7) 100%
   );
 }
 
 .hero__content {
   position: relative;
   z-index: 2;
-  padding: 0 24px 80px;
-  color: var(--white);
   text-align: center;
+  padding: 0 24px;
+}
+
+.hero__date {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  opacity: 0.8;
+  margin-bottom: 1.5rem;
 }
 
 .hero__names {
   font-family: var(--font-serif);
   font-weight: 300;
-  font-size: clamp(2.8rem, 8vw, 5.5rem);
-  letter-spacing: -0.02em;
+  font-size: clamp(3rem, 9vw, 6rem);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  margin: 0 0 2.5rem;
   color: var(--white);
-  margin: 0 0 12px;
-  line-height: 1;
 }
 
-.hero__names span {
-  color: var(--accent);
+.hero__amp {
+  display: inline-block;
   font-style: italic;
-  padding: 0 0.06em;
   font-weight: 400;
-}
-
-.hero__date {
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 3.5px;
-  opacity: 0.85;
-  margin-bottom: 48px;
+  font-size: 0.55em;
+  color: var(--accent);
+  vertical-align: 0.15em;
+  padding: 0 0.15em;
 }
 
 .hero__countdown {
   display: flex;
-  gap: clamp(1.5rem, 5vw, 3.5rem);
+  gap: clamp(2rem, 6vw, 4rem);
   justify-content: center;
 }
 
-.hero__time {
+.hero__unit {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  min-width: 3.5rem;
 }
 
-.hero__time span {
+.hero__unit span {
   font-family: var(--font-serif);
-  font-size: clamp(2rem, 4vw, 3rem);
+  font-size: clamp(2rem, 4.5vw, 3.2rem);
   font-weight: 300;
   font-variant-numeric: tabular-nums;
+  line-height: 1;
 }
 
-.hero__time small {
-  font-size: 0.62rem;
+.hero__unit small {
+  font-size: 0.58rem;
   text-transform: uppercase;
-  letter-spacing: 2px;
-  opacity: 0.65;
+  letter-spacing: 2.5px;
+  opacity: 0.55;
 }
 
 /* Scroll indicator */
-.hero__scroll-hint {
+.hero__scroll {
   position: absolute;
-  bottom: 24px;
+  bottom: 32px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-decoration: none;
-  height: 52px;
+  gap: 10px;
 }
 
-.hero__scroll-line {
+.hero__scroll span {
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  opacity: 0.5;
+}
+
+.hero__scroll-bar {
   width: 1px;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.3);
-  display: block;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.2);
+  position: relative;
+  overflow: hidden;
 }
 
-.hero__scroll-dot {
+.hero__scroll-fill {
   position: absolute;
-  top: 0;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
+  top: -100%;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background: var(--white);
-  animation: hero-scroll-dot 2.4s ease-in-out infinite;
+  animation: scroll-fill 2s ease-in-out infinite;
 }
 
-@keyframes hero-scroll-dot {
-  0% { top: 0; opacity: 0; }
-  15% { opacity: 1; }
-  85% { opacity: 1; }
-  100% { top: 46px; opacity: 0; }
+@keyframes scroll-fill {
+  0% { top: -100%; }
+  50% { top: 0; }
+  100% { top: 100%; }
 }
 
-/* Entrance animations */
-.fade-up {
+/* Entrance */
+.fade-in {
   opacity: 0;
-  transform: translateY(18px);
-  animation: hero-fade-up 1s ease-out forwards;
+  transform: translateY(20px);
+  animation: fade-in 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+.fade-in--1 { animation-delay: 0.2s; }
+.fade-in--2 { animation-delay: 0.5s; }
+.fade-in--3 { animation-delay: 0.8s; }
 
-.fade-up--1 { animation-delay: 0.15s; }
-.fade-up--2 { animation-delay: 0.35s; }
-.fade-up--3 { animation-delay: 0.5s; }
-
-@keyframes hero-fade-up {
+@keyframes fade-in {
   to { opacity: 1; transform: translateY(0); }
-}
-
-@media (min-width: 720px) {
-  .hero__content {
-    padding-bottom: 120px;
-  }
 }

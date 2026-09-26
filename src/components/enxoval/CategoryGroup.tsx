@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import {
-  ENXOVAL_CATEGORIA_ICONE,
   type EnxovalCategoria,
   type EnxovalItem,
   type EnxovalStatus,
@@ -31,10 +30,7 @@ export function CategoryGroup({
   return (
     <div className="category-group">
       <div className="category-group__header">
-        <h3>
-          <span className="category-group__icon">{ENXOVAL_CATEGORIA_ICONE[categoria]}</span>
-          {categoria}
-        </h3>
+        <h3>{categoria}</h3>
         <div className="category-group__progress">
           <div className="category-group__bar">
             <div

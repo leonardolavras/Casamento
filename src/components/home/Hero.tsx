@@ -7,7 +7,7 @@ import "./Hero.css";
 export function Hero() {
   const countdown = useCountdown(WEDDING_DATE);
   const ref = useRef<HTMLElement>(null);
-  const offset = useParallax(ref, 0.4);
+  const offset = useParallax(ref, 0.35);
 
   const dataFormatada = WEDDING_DATE.toLocaleDateString("pt-BR", {
     day: "2-digit",
@@ -17,36 +17,36 @@ export function Hero() {
 
   return (
     <section className="hero" ref={ref}>
-      <div className="hero__media" style={{ transform: `translate3d(0, ${offset}px, 0)` }}>
-        <img src={HERO_PHOTO} alt={`${COUPLE.nome1} e ${COUPLE.nome2}`} />
+      <div className="hero__bg" style={{ transform: `translate3d(0, ${offset}px, 0) scale(1.1)` }}>
+        <img src={HERO_PHOTO} alt="" />
       </div>
-      <div className="hero__scrim" />
+      <div className="hero__overlay" />
 
       <div className="hero__content">
-        <h1 className="hero__names fade-up">
-          {COUPLE.nome1} <span>&amp;</span> {COUPLE.nome2}
+        <p className="hero__date fade-in">{dataFormatada}</p>
+        <h1 className="hero__names fade-in fade-in--1">
+          {COUPLE.nome1} <span className="hero__amp">&</span> {COUPLE.nome2}
         </h1>
-        <p className="hero__date fade-up fade-up--1">{dataFormatada}</p>
 
-        <div className="hero__countdown fade-up fade-up--2">
+        <div className="hero__countdown fade-in fade-in--2">
           {[
-            { value: countdown.dias, label: "dias" },
-            { value: String(countdown.horas).padStart(2, "0"), label: "horas" },
-            { value: String(countdown.minutos).padStart(2, "0"), label: "min" },
-            { value: String(countdown.segundos).padStart(2, "0"), label: "seg" },
-          ].map((unit) => (
-            <div className="hero__time" key={unit.label}>
-              <span>{unit.value}</span>
-              <small>{unit.label}</small>
+            { v: countdown.dias, l: "dias" },
+            { v: String(countdown.horas).padStart(2, "0"), l: "horas" },
+            { v: String(countdown.minutos).padStart(2, "0"), l: "min" },
+            { v: String(countdown.segundos).padStart(2, "0"), l: "seg" },
+          ].map((u) => (
+            <div className="hero__unit" key={u.l}>
+              <span>{u.v}</span>
+              <small>{u.l}</small>
             </div>
           ))}
         </div>
       </div>
 
-      <a className="hero__scroll-hint" href="#onde-e-quando" aria-label="Rolar para baixo">
-        <span className="hero__scroll-line" />
-        <span className="hero__scroll-dot" />
-      </a>
+      <div className="hero__scroll fade-in fade-in--3">
+        <span>Scroll</span>
+        <div className="hero__scroll-bar"><div className="hero__scroll-fill" /></div>
+      </div>
     </section>
   );
 }

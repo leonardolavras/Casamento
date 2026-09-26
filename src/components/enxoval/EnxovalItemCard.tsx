@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   ENXOVAL_STATUS,
   ENXOVAL_STATUS_LABEL,
@@ -19,23 +18,12 @@ export function EnxovalItemCard({
   onStatusChange,
   onRemove,
 }: EnxovalItemCardProps) {
-  const [zoomed, setZoomed] = useState(false);
-
   return (
     <li className={`item-card item-card--${item.status}`}>
-      {item.imagem_url && (
-        <img
-          src={item.imagem_url}
-          alt={item.nome}
-          className="item-card__foto"
-          onClick={() => setZoomed(true)}
-        />
-      )}
-
       <div className="item-card__top">
         <span className="item-card__nome">{item.nome}</span>
         {item.quantidade > 1 && (
-          <span className="item-card__qtd">×{item.quantidade}</span>
+          <span className="item-card__qtd">{item.quantidade}x</span>
         )}
       </div>
 
@@ -49,7 +37,7 @@ export function EnxovalItemCard({
           </span>
         )}
         {item.prioridade === "alta" && (
-          <span className="item-card__prioridade">Prioridade alta</span>
+          <span className="item-card__prioridade">Prioridade</span>
         )}
       </div>
 
@@ -62,7 +50,7 @@ export function EnxovalItemCard({
           target="_blank"
           rel="noreferrer"
         >
-          Ver referência ↗
+          Ver referencia
         </a>
       )}
 
@@ -90,15 +78,8 @@ export function EnxovalItemCard({
             onClick={() => onRemove(item.id)}
             aria-label={`Remover ${item.nome}`}
           >
-            ✕
+            &times;
           </button>
-        </div>
-      )}
-
-      {zoomed && item.imagem_url && (
-        <div className="lightbox-overlay" onClick={() => setZoomed(false)}>
-          <span className="lightbox-close">&times;</span>
-          <img className="lightbox-content" src={item.imagem_url} alt="" />
         </div>
       )}
     </li>

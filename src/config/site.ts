@@ -1,8 +1,8 @@
 // Configuração central do site — edite aqui conforme o planejamento avança.
 
 export const COUPLE = {
-  nome1: "Noivo(a) 1",
-  nome2: "Noivo(a) 2",
+  nome1: "Leonardo",
+  nome2: "Gabriella",
 };
 
 // Data do casamento (ano, mês [0-11], dia, hora, minuto).
