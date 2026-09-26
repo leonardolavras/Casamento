@@ -13,6 +13,7 @@ import {
 } from "./EnxovalFilters";
 import { CategoryGroup } from "./CategoryGroup";
 import { ENXOVAL_CATEGORIAS } from "../../types/enxoval";
+import { PALETA_CORES } from "../../config/site";
 import "./Enxoval.css";
 
 export function EnxovalChecklist() {
@@ -80,6 +81,30 @@ export function EnxovalChecklist() {
           para a nossa casa nova.
         </p>
       </header>
+
+      <div className="paleta-cores">
+        <h2 className="paleta-cores__titulo">Nossa paleta de cores</h2>
+        <p className="paleta-cores__sub">
+          Para presentes de decoração ou tecidos, essas são as cores do nosso lar.
+        </p>
+        <div className="paleta-cores__swatches">
+          {PALETA_CORES.map((cor) => (
+            <div key={cor.hex} className="paleta-swatch">
+              <div
+                className="paleta-swatch__color"
+                style={{ backgroundColor: cor.hex }}
+              />
+              <div className="paleta-swatch__info">
+                <span className="paleta-swatch__nome">{cor.nome}</span>
+                {cor.descricao && (
+                  <span className="paleta-swatch__desc">{cor.descricao}</span>
+                )}
+                <span className="paleta-swatch__hex">{cor.hex}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
 
       {guestMode && (
         <div className="enxoval__guest-banner">

@@ -41,7 +41,14 @@ export const RECEPCAO: EventoInfo = {
 
 export const DRESS_CODE = "Traje social. Cores a evitar: branco.";
 
-export const PIX_KEY: string | null = null; // Coloque sua chave Pix aqui (CPF, email, telefone ou chave aleatória)
+export const PIX_KEY: string | null = null;
+
+export const PALETA_CORES: { nome: string; hex: string; descricao?: string }[] = [
+  { nome: "Coral", hex: "#DAC8B3", descricao: "Bege Perfeito" },
+  { nome: "Terracota", hex: "#A15C3E", descricao: "Acento quente" },
+  { nome: "Creme", hex: "#FBF7F1", descricao: "Base suave" },
+  { nome: "Grafite", hex: "#201D1A", descricao: "Contraste" },
+]; // Coloque sua chave Pix aqui (CPF, email, telefone ou chave aleatória)
 
 export const GALLERY_PHOTOS: { src: string; caption: string }[] = [
   { src: "/fotos/foto1.jpeg", caption: "Um momento nosso" },
