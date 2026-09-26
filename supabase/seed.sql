@@ -66,5 +66,26 @@ values
   ('Escova de limpeza', 'Área de Serviço', 'precisamos', 1, 'baixa', '/enxoval-fotos/escova-de-limpeza.jpg'),
   ('Pregadores de roupa', 'Área de Serviço', 'precisamos', 1, 'baixa', '/enxoval-fotos/pregadores-de-roupa.jpg'),
   ('Varal', 'Área de Serviço', 'precisamos', 1, 'media', '/enxoval-fotos/varal.jpg'),
-  ('Baldes', 'Área de Serviço', 'precisamos', 1, 'media', '/enxoval-fotos/baldes.jpg')
+  ('Baldes', 'Área de Serviço', 'precisamos', 1, 'media', '/enxoval-fotos/baldes.jpg'),
+
+  -- Farmacinha
+  ('Termômetro', 'Farmacinha', 'precisamos', 1, 'alta', null),
+  ('Analgésico', 'Farmacinha', 'precisamos', 1, 'alta', null),
+  ('Antitérmico', 'Farmacinha', 'precisamos', 1, 'alta', null),
+  ('Relaxante muscular', 'Farmacinha', 'precisamos', 1, 'media', null),
+  ('Antiácido', 'Farmacinha', 'precisamos', 1, 'media', null),
+  ('Antisséptico', 'Farmacinha', 'precisamos', 1, 'media', null),
+  ('Curativos', 'Farmacinha', 'precisamos', 1, 'alta', null),
+
+  -- Emergências domésticas
+  ('Extensão elétrica', 'Emergências', 'precisamos', 1, 'alta', null),
+  ('Adaptador de tomada', 'Emergências', 'precisamos', 3, 'media', null),
+  ('Velas', 'Emergências', 'precisamos', 4, 'media', null),
+  ('Martelo', 'Emergências', 'precisamos', 1, 'alta', null),
+  ('Chave de fenda', 'Emergências', 'precisamos', 1, 'media', null),
+  ('Chave Philips', 'Emergências', 'precisamos', 1, 'media', null),
+  ('Pregos sortidos', 'Emergências', 'precisamos', 1, 'baixa', null),
+  ('Cola instantânea', 'Emergências', 'precisamos', 1, 'baixa', null),
+  ('Lâmpada extra', 'Emergências', 'precisamos', 2, 'media', null),
+  ('Pilhas', 'Emergências', 'precisamos', 1, 'media', null)
 on conflict (nome) do update set imagem_url = excluded.imagem_url;

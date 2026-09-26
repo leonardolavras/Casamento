@@ -1,9 +1,20 @@
 import { CERIMONIA, DRESS_CODE, RECEPCAO, type EventoInfo } from "../../config/site";
+import { useScrollReveal } from "../../hooks/useScrollReveal";
 import "./EventInfo.css";
 
-function EventCard({ evento }: { evento: EventoInfo }) {
+function EventCard({ evento, delay }: { evento: EventoInfo; delay: number }) {
+  const { ref, visible } = useScrollReveal<HTMLDivElement>();
+
   return (
-    <div className="event-card">
+    <div
+      ref={ref}
+      className="event-card"
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? "none" : "translateY(30px)",
+        transitionDelay: `${delay}ms`,
+      }}
+    >
       <h3>{evento.titulo}</h3>
       <p className="event-card__data">{evento.data}</p>
       <p className="event-card__hora">{evento.hora}</p>
@@ -35,8 +46,8 @@ export function EventInfo() {
         <h2 className="section-title">Onde e quando</h2>
       </div>
       <div className="event-info__cards">
-        <EventCard evento={CERIMONIA} />
-        {!mesmoLocal && <EventCard evento={RECEPCAO} />}
+        <EventCard evento={CERIMONIA} delay={0} />
+        {!mesmoLocal && <EventCard evento={RECEPCAO} delay={150} />}
       </div>
       <p className="event-info__dress-code">
         <strong>Traje:</strong> {DRESS_CODE}

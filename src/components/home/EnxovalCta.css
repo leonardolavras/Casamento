@@ -1,45 +1,63 @@
 .enxoval-cta {
-  max-width: 640px;
+  background: var(--ink);
+  padding: 96px 24px;
+}
+
+.enxoval-cta__inner {
+  max-width: 680px;
   margin: 0 auto;
   text-align: center;
-  background: var(--paper-alt);
-  border: 1px solid var(--line);
-  padding: 3.5rem 2rem;
-  position: relative;
 }
 
-.enxoval-cta__mark {
-  display: flex;
-  gap: 0.35rem;
-  justify-content: center;
-  margin-bottom: 1.5rem;
-}
-
-.enxoval-cta__mark span {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  border: 1.5px solid var(--accent);
-}
-
-.enxoval-cta__mark span:last-child {
-  border-color: var(--ink);
-  margin-left: -12px;
-  background: var(--paper-alt);
+.enxoval-cta__eyebrow {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: var(--accent);
+  margin-bottom: 16px;
 }
 
 .enxoval-cta__title {
-  font-size: clamp(1.6rem, 3vw, 2.1rem);
-  font-weight: 500;
+  font-family: var(--font-serif);
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 300;
+  color: var(--white);
+  line-height: 1.15;
+  margin: 0 0 1.25rem;
   letter-spacing: -0.01em;
-  margin: 0.75rem 0 1rem;
 }
 
 .enxoval-cta__lead {
   font-family: var(--font-serif);
-  font-size: 1.08rem;
-  color: var(--ink-soft);
-  line-height: 1.55;
-  max-width: 480px;
-  margin: 0 auto 1.75rem;
+  font-size: 1.1rem;
+  color: var(--ink-faint);
+  line-height: 1.6;
+  margin: 0 auto 2.5rem;
+  max-width: 520px;
+}
+
+.btn--cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1rem 2rem;
+  background: var(--accent);
+  color: var(--white);
+  border: 1px solid var(--accent);
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s;
+}
+
+.btn--cta:hover {
+  background: var(--accent-dark);
+  border-color: var(--accent-dark);
+  transform: translateY(-2px);
 }

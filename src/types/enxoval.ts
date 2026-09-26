@@ -21,6 +21,8 @@ export const ENXOVAL_CATEGORIAS = [
   "Sala",
   "Decoração",
   "Eletrodomésticos",
+  "Farmacinha",
+  "Emergências",
   "Outros",
 ] as const;
 export type EnxovalCategoria = (typeof ENXOVAL_CATEGORIAS)[number];
@@ -33,6 +35,8 @@ export const ENXOVAL_CATEGORIA_ICONE: Record<EnxovalCategoria, string> = {
   Sala: "🛋️",
   Decoração: "🎀",
   Eletrodomésticos: "🔌",
+  Farmacinha: "💊",
+  Emergências: "🔧",
   Outros: "📦",
 };
 

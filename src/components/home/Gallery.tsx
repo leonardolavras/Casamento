@@ -15,20 +15,25 @@ function GalleryPhoto({
   onOpen: (src: string) => void;
 }) {
   const { ref, visible } = useScrollReveal<HTMLButtonElement>();
-
-  // Rotate through a couple of aspect ratios so the mosaic feels organic
-  const aspects = ["tall", "wide", "square"] as const;
-  const shape = aspects[index % aspects.length];
+  const span = index % 5 === 0 ? "featured" : index % 3 === 1 ? "tall" : "normal";
 
   return (
     <button
       ref={ref}
       type="button"
-      className={`gallery-item gallery-item--${shape} ${visible ? "gallery-item--visible" : ""}`}
+      className={`gallery-item gallery-item--${span}`}
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? "none" : "scale(0.96)",
+        transitionDelay: `${(index % 4) * 80}ms`,
+      }}
       onClick={() => onOpen(src)}
       aria-label={`Ampliar foto: ${caption}`}
     >
       <img src={src} alt={caption} loading="lazy" />
+      <div className="gallery-item__overlay">
+        <span className="gallery-item__icon">+</span>
+      </div>
     </button>
   );
 }
@@ -40,12 +45,18 @@ export function Gallery() {
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") setLightbox(null);
     }
-    if (lightbox) document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+    if (lightbox) {
+      document.addEventListener("keydown", onKey);
+      document.body.style.overflow = "hidden";
+    }
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
   }, [lightbox]);
 
   return (
-    <section className="section-container">
+    <section className="section-container" id="galeria">
       <div className="section-heading">
         <span className="section-eyebrow">Momentos</span>
         <h2 className="section-title">Nossa galeria</h2>
