@@ -1,5 +1,12 @@
 import type { EnxovalItem, EnxovalItemInput } from "./enxoval";
 
+export type MuralRecado = {
+  id: string;
+  nome: string;
+  mensagem: string;
+  created_at: string;
+};
+
 export type Database = {
   public: {
     Tables: {
@@ -7,6 +14,12 @@ export type Database = {
         Row: EnxovalItem;
         Insert: Partial<EnxovalItemInput> & Pick<EnxovalItemInput, "nome">;
         Update: Partial<EnxovalItemInput>;
+        Relationships: [];
+      };
+      mural_recados: {
+        Row: MuralRecado;
+        Insert: Pick<MuralRecado, "nome" | "mensagem">;
+        Update: Partial<Pick<MuralRecado, "nome" | "mensagem">>;
         Relationships: [];
       };
     };

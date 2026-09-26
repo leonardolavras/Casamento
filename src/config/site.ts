@@ -41,6 +41,8 @@ export const RECEPCAO: EventoInfo = {
 
 export const DRESS_CODE = "Traje social. Cores a evitar: branco.";
 
+export const PIX_KEY: string | null = null; // Coloque sua chave Pix aqui (CPF, email, telefone ou chave aleatória)
+
 export const GALLERY_PHOTOS: { src: string; caption: string }[] = [
   { src: "/fotos/foto1.jpeg", caption: "Um momento nosso" },
   { src: "/fotos/foto2.jpeg", caption: "Um momento nosso" },

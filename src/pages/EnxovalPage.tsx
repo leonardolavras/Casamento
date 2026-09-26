@@ -1,5 +1,9 @@
 import { EnxovalChecklist } from "../components/enxoval/EnxovalChecklist";
 
 export function EnxovalPage() {
-  return <EnxovalChecklist />;
+  return (
+    <div className="page-transition">
+      <EnxovalChecklist />
+    </div>
+  );
 }

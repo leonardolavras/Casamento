@@ -1,0 +1,97 @@
+.mural {
+  padding: 0;
+}
+
+.mural__form {
+  max-width: 520px;
+  margin: 0 auto 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.mural__form input,
+.mural__form textarea {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--line);
+  background: var(--white);
+  font: inherit;
+  font-size: 0.95rem;
+  color: var(--ink);
+  transition: border-color 0.2s;
+  resize: vertical;
+}
+
+.mural__form input:focus,
+.mural__form textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.mural__form .btn {
+  align-self: flex-start;
+}
+
+.mural__success {
+  font-size: 0.85rem;
+  color: var(--status-temos);
+  animation: fade-in 0.4s ease;
+}
+
+.mural__loading,
+.mural__empty {
+  text-align: center;
+  color: var(--ink-soft);
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  padding: 2rem 0;
+}
+
+.mural__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.recado-card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  transition: opacity 0.8s ease, transform 0.8s ease, box-shadow 0.3s;
+}
+
+.recado-card:hover {
+  box-shadow: var(--shadow-sm);
+}
+
+.recado-card__msg {
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--ink);
+  font-style: italic;
+}
+
+.recado-card__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.recado-card__nome {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.recado-card__time {
+  font-size: 0.7rem;
+  color: var(--ink-faint);
+  letter-spacing: 0.5px;
+}

@@ -1,9 +1,19 @@
 import { Link } from "react-router-dom";
+import { useScrollReveal } from "../../hooks/useScrollReveal";
 import "./EnxovalCta.css";
 
 export function EnxovalCta() {
+  const { ref, visible } = useScrollReveal<HTMLElement>();
+
   return (
-    <section className="enxoval-cta">
+    <section
+      className="enxoval-cta"
+      ref={ref}
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? "none" : "translateY(40px)",
+      }}
+    >
       <div className="enxoval-cta__inner">
         <span className="enxoval-cta__eyebrow">Nosso lar</span>
         <h2 className="enxoval-cta__title">

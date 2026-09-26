@@ -78,3 +78,23 @@ drop policy if exists "Enxoval fotos: delete publico" on storage.objects;
 create policy "Enxoval fotos: delete publico"
   on storage.objects for delete
   using (bucket_id = 'enxoval-fotos');
+
+-- Mural de recados dos convidados
+create table if not exists public.mural_recados (
+  id uuid primary key default gen_random_uuid(),
+  nome text not null,
+  mensagem text not null,
+  created_at timestamptz not null default now()
+);
+
+alter table public.mural_recados enable row level security;
+
+drop policy if exists "Mural: leitura publica" on public.mural_recados;
+create policy "Mural: leitura publica"
+  on public.mural_recados for select
+  using (true);
+
+drop policy if exists "Mural: escrita publica" on public.mural_recados;
+create policy "Mural: escrita publica"
+  on public.mural_recados for insert
+  with check (true);

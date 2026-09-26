@@ -1,6 +1,7 @@
 .enxoval-cta {
   background: var(--ink);
   padding: 96px 24px;
+  transition: opacity 1s ease, transform 1s ease;
 }
 
 .enxoval-cta__inner {

@@ -71,30 +71,82 @@
 
 .hero__countdown {
   display: flex;
-  gap: clamp(2rem, 6vw, 4rem);
+  gap: clamp(1rem, 4vw, 2.5rem);
   justify-content: center;
 }
 
-.hero__unit {
+.flip-unit {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
-.hero__unit span {
+.flip-unit__card {
+  position: relative;
+  width: clamp(56px, 12vw, 80px);
+  height: clamp(64px, 14vw, 92px);
+  perspective: 400px;
+  overflow: hidden;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(4px);
+}
+
+.flip-unit__top,
+.flip-unit__bottom,
+.flip-unit__flip {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-family: var(--font-serif);
-  font-size: clamp(2rem, 4.5vw, 3.2rem);
+  font-size: clamp(1.8rem, 4.5vw, 2.8rem);
   font-weight: 300;
   font-variant-numeric: tabular-nums;
-  line-height: 1;
+  color: var(--white);
 }
 
-.hero__unit small {
+.flip-unit__top {
+  z-index: 1;
+}
+
+.flip-unit__bottom {
+  z-index: 0;
+}
+
+.flip-unit__flip {
+  z-index: 2;
+  animation: flip-tick 0.6s ease-in-out;
+  backface-visibility: hidden;
+}
+
+.flip-unit__card::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  z-index: 3;
+}
+
+.flip-unit__label {
   font-size: 0.58rem;
   text-transform: uppercase;
   letter-spacing: 2.5px;
   opacity: 0.55;
+  color: var(--white);
+}
+
+@keyframes flip-tick {
+  0% { transform: rotateX(0); }
+  50% { transform: rotateX(-6deg); }
+  100% { transform: rotateX(0); }
 }
 
 /* Scroll indicator */

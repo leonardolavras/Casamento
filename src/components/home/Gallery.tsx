@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { GALLERY_PHOTOS } from "../../config/site";
 import { useScrollReveal } from "../../hooks/useScrollReveal";
 import "./Gallery.css";
@@ -12,7 +12,7 @@ function GalleryPhoto({
   src: string;
   caption: string;
   index: number;
-  onOpen: (src: string) => void;
+  onOpen: (index: number) => void;
 }) {
   const { ref, visible } = useScrollReveal<HTMLButtonElement>();
   const span = index % 5 === 0 ? "featured" : index % 3 === 1 ? "tall" : "normal";
@@ -27,7 +27,7 @@ function GalleryPhoto({
         transform: visible ? "none" : "scale(0.96)",
         transitionDelay: `${(index % 4) * 80}ms`,
       }}
-      onClick={() => onOpen(src)}
+      onClick={() => onOpen(index)}
       aria-label={`Ampliar foto: ${caption}`}
     >
       <img src={src} alt={caption} loading="lazy" />
@@ -39,13 +39,21 @@ function GalleryPhoto({
 }
 
 export function Gallery() {
-  const [lightbox, setLightbox] = useState<string | null>(null);
+  const [current, setCurrent] = useState<number | null>(null);
+  const total = GALLERY_PHOTOS.length;
+
+  const close = useCallback(() => setCurrent(null), []);
+  const prev = useCallback(() => setCurrent((c) => (c !== null ? (c - 1 + total) % total : null)), [total]);
+  const next = useCallback(() => setCurrent((c) => (c !== null ? (c + 1) % total : null)), [total]);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setLightbox(null);
+      if (current === null) return;
+      if (e.key === "Escape") close();
+      if (e.key === "ArrowLeft") prev();
+      if (e.key === "ArrowRight") next();
     }
-    if (lightbox) {
+    if (current !== null) {
       document.addEventListener("keydown", onKey);
       document.body.style.overflow = "hidden";
     }
@@ -53,7 +61,7 @@ export function Gallery() {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
     };
-  }, [lightbox]);
+  }, [current, close, prev, next]);
 
   return (
     <section className="section-container" id="galeria">
@@ -69,15 +77,35 @@ export function Gallery() {
             src={photo.src}
             caption={photo.caption}
             index={index}
-            onOpen={setLightbox}
+            onOpen={setCurrent}
           />
         ))}
       </div>
 
-      {lightbox && (
-        <div className="lightbox-overlay" onClick={() => setLightbox(null)}>
-          <span className="lightbox-close">&times;</span>
-          <img className="lightbox-content" src={lightbox} alt="" />
+      {current !== null && (
+        <div className="lightbox-overlay" onClick={close}>
+          <button className="lightbox-close" aria-label="Fechar">&times;</button>
+          <button
+            className="lightbox-nav lightbox-nav--prev"
+            onClick={(e) => { e.stopPropagation(); prev(); }}
+            aria-label="Foto anterior"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <img
+            className="lightbox-content"
+            src={GALLERY_PHOTOS[current].src}
+            alt={GALLERY_PHOTOS[current].caption}
+            key={GALLERY_PHOTOS[current].src}
+          />
+          <button
+            className="lightbox-nav lightbox-nav--next"
+            onClick={(e) => { e.stopPropagation(); next(); }}
+            aria-label="Próxima foto"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+          <span className="lightbox-counter">{current + 1} / {total}</span>
         </div>
       )}
     </section>

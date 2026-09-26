@@ -4,6 +4,19 @@ import { useCountdown } from "../../hooks/useCountdown";
 import { useParallax } from "../../hooks/useParallax";
 import "./Hero.css";
 
+function FlipDigit({ value, label }: { value: string; label: string }) {
+  return (
+    <div className="flip-unit">
+      <div className="flip-unit__card" key={value}>
+        <span className="flip-unit__top">{value}</span>
+        <span className="flip-unit__bottom">{value}</span>
+        <span className="flip-unit__flip" style={{ animationPlayState: "running" }}>{value}</span>
+      </div>
+      <small className="flip-unit__label">{label}</small>
+    </div>
+  );
+}
+
 export function Hero() {
   const countdown = useCountdown(WEDDING_DATE);
   const ref = useRef<HTMLElement>(null);
@@ -14,6 +27,13 @@ export function Hero() {
     month: "long",
     year: "numeric",
   });
+
+  const units = [
+    { v: String(countdown.dias), l: "dias" },
+    { v: String(countdown.horas).padStart(2, "0"), l: "horas" },
+    { v: String(countdown.minutos).padStart(2, "0"), l: "min" },
+    { v: String(countdown.segundos).padStart(2, "0"), l: "seg" },
+  ];
 
   return (
     <section className="hero" ref={ref}>
@@ -29,16 +49,8 @@ export function Hero() {
         </h1>
 
         <div className="hero__countdown fade-in fade-in--2">
-          {[
-            { v: countdown.dias, l: "dias" },
-            { v: String(countdown.horas).padStart(2, "0"), l: "horas" },
-            { v: String(countdown.minutos).padStart(2, "0"), l: "min" },
-            { v: String(countdown.segundos).padStart(2, "0"), l: "seg" },
-          ].map((u) => (
-            <div className="hero__unit" key={u.l}>
-              <span>{u.v}</span>
-              <small>{u.l}</small>
-            </div>
+          {units.map((u) => (
+            <FlipDigit key={u.l} value={u.v} label={u.l} />
           ))}
         </div>
       </div>
