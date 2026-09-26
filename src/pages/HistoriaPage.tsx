@@ -1,111 +1,81 @@
-import { useState } from "react";
-import { TIMELINE_ITEMS } from "../config/site";
+import { COUPLE } from "../config/site";
 import { useScrollReveal } from "../hooks/useScrollReveal";
 import "./HistoriaPage.css";
 
-function HistoriaItem({
-  item,
-  idx,
-  isOpen,
-  onToggle,
+function StoryBlock({
+  children,
+  delay = 0,
 }: {
-  item: (typeof TIMELINE_ITEMS)[number];
-  idx: number;
-  isOpen: boolean;
-  onToggle: () => void;
+  children: React.ReactNode;
+  delay?: number;
 }) {
   const { ref, visible } = useScrollReveal<HTMLDivElement>();
-
   return (
     <div
       ref={ref}
-      className={`historia-item ${item.concluido ? "historia-item--done" : ""} ${isOpen ? "historia-item--open" : ""}`}
+      className="historia-block"
       style={{
         opacity: visible ? 1 : 0,
         transform: visible ? "none" : "translateY(24px)",
-        transitionDelay: `${idx * 100}ms`,
+        transitionDelay: `${delay}ms`,
       }}
     >
-      <button
-        type="button"
-        className="historia-item__header"
-        onClick={onToggle}
-        aria-expanded={isOpen}
-      >
-        <span className="historia-item__dot" aria-hidden="true" />
-        <div className="historia-item__info">
-          <span className="historia-item__index">
-            {String(idx + 1).padStart(2, "0")}
-          </span>
-          <h3 className="historia-item__title">{item.texto}</h3>
-        </div>
-        <span className="historia-item__status">
-          {item.concluido ? "Vivido" : "Em breve"}
-        </span>
-        <svg
-          className="historia-item__chevron"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <polyline points="6 9 12 15 18 9" />
-        </svg>
-      </button>
-
-      <div className="historia-item__body">
-        <div className="historia-item__content">
-          {item.descricao ? (
-            <p>{item.descricao}</p>
-          ) : (
-            <p className="historia-item__placeholder">
-              {item.concluido
-                ? "Em breve adicionaremos mais detalhes e fotos desse momento..."
-                : "Esse capítulo ainda está por vir..."}
-            </p>
-          )}
-          {item.foto && (
-            <img
-              src={item.foto}
-              alt={item.texto}
-              className="historia-item__photo"
-              loading="lazy"
-            />
-          )}
-        </div>
-      </div>
+      {children}
     </div>
   );
 }
 
 export function HistoriaPage() {
-  const [openId, setOpenId] = useState<string | null>(null);
-
   return (
     <div className="page-transition" style={{ paddingTop: "80px" }}>
       <section className="section-container">
         <div className="section-heading">
-          <span className="section-eyebrow">A jornada</span>
+          <span className="section-eyebrow">Sobre nós</span>
           <h2 className="section-title">Nossa história</h2>
         </div>
 
-        <div className="historia-timeline">
-          <div className="historia-timeline__line" aria-hidden="true" />
-          {TIMELINE_ITEMS.map((item, idx) => (
-            <HistoriaItem
-              key={item.id}
-              item={item}
-              idx={idx}
-              isOpen={openId === item.id}
-              onToggle={() =>
-                setOpenId((prev) => (prev === item.id ? null : item.id))
-              }
-            />
-          ))}
+        <div className="historia-content">
+          <StoryBlock>
+            <div className="historia-photo-slot">
+              <img
+                src="/fotos/historia-1.jpg"
+                alt={`${COUPLE.nome1} e ${COUPLE.nome2}`}
+                loading="lazy"
+              />
+              <span className="historia-photo-slot__fallback">
+                Foto do casal
+              </span>
+            </div>
+          </StoryBlock>
+
+          <StoryBlock delay={100}>
+            <blockquote className="historia-quote">
+              "O amor não se resume a olhar um para o outro, mas sim a olhar
+              juntos na mesma direção."
+            </blockquote>
+          </StoryBlock>
+
+          <StoryBlock delay={200}>
+            <p className="historia-text">
+              Em breve, vamos contar aqui como tudo começou, como nos
+              apaixonamos e os momentos que marcaram a nossa história até o
+              grande dia. Volte em breve para saber mais sobre{" "}
+              {COUPLE.nome1} & {COUPLE.nome2}.
+            </p>
+          </StoryBlock>
+
+          <StoryBlock delay={300}>
+            <div className="historia-photo-slot historia-photo-slot--wide">
+              <img
+                src="/fotos/historia-2.jpg"
+                alt={`${COUPLE.nome1} e ${COUPLE.nome2}`}
+                loading="lazy"
+              />
+              <span className="historia-photo-slot__fallback">
+                Foto do ensaio
+              </span>
+            </div>
+          </StoryBlock>
         </div>
       </section>
     </div>

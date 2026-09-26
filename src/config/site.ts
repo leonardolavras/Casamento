@@ -83,33 +83,3 @@ export const REASONS: string[] = [
   "Porque o amor de vocês é motivo suficiente.",
 ];
 
-// Itens da linha do tempo interativa — cada marco pode ter descrição e foto.
-export const TIMELINE_ITEMS: {
-  id: string;
-  texto: string;
-  concluido?: boolean;
-  descricao?: string;
-  foto?: string;
-}[] = [
-  {
-    id: "conhecer",
-    texto: "Nos conhecemos",
-    concluido: true,
-    descricao: "Adicione aqui como vocês se conheceram...",
-  },
-  {
-    id: "namoro",
-    texto: "Começamos a namorar",
-    concluido: true,
-    descricao: "Adicione aqui como começou o namoro...",
-  },
-  {
-    id: "noivado",
-    texto: "Noivado",
-    concluido: true,
-    descricao: "Adicione aqui a história do pedido...",
-  },
-  { id: "casamento", texto: "Casamento" },
-  { id: "lua-de-mel", texto: "Lua de mel" },
-  { id: "lar", texto: "Construir nosso lar" },
-];
