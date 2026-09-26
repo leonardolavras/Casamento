@@ -60,5 +60,5 @@ export type EnxovalItem = {
 
 export type EnxovalItemInput = Omit<
   EnxovalItem,
-  "id" | "created_at" | "updated_at" | "imagem_url"
+  "id" | "created_at" | "updated_at"
 >;

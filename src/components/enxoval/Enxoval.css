@@ -614,6 +614,194 @@
   color: var(--accent);
 }
 
+/* ---- Image thumbnail in row ---- */
+.enxoval-row__img {
+  width: 36px;
+  height: 36px;
+  object-fit: cover;
+  border-radius: 4px;
+  flex-shrink: 0;
+  border: 1px solid var(--line);
+}
+
+.enxoval-row__nome--editable {
+  cursor: pointer;
+  border-bottom: 1px dashed transparent;
+  transition: border-color 0.15s;
+}
+
+.enxoval-row__nome--editable:hover {
+  border-bottom-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ---- Edit modal ---- */
+.enxoval-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: fade-in 0.2s ease-out;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.enxoval-modal {
+  background: var(--paper);
+  width: 100%;
+  max-width: 480px;
+  max-height: 90dvh;
+  overflow-y: auto;
+  animation: modal-in 0.25s ease-out;
+}
+
+@keyframes modal-in {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+
+.enxoval-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.25rem 0;
+}
+
+.enxoval-modal__header h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--ink);
+}
+
+.enxoval-modal__close {
+  border: none;
+  background: none;
+  font-size: 1.4rem;
+  color: var(--ink-faint);
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  line-height: 1;
+}
+
+.enxoval-modal__close:hover {
+  color: var(--ink);
+}
+
+.enxoval-modal__form {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.enxoval-modal__form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  flex: 1;
+}
+
+.enxoval-modal__form label > span {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--ink-soft);
+}
+
+.enxoval-modal__form input,
+.enxoval-modal__form select,
+.enxoval-modal__form textarea {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--line);
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--ink);
+  background: var(--white);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.enxoval-modal__form input:focus,
+.enxoval-modal__form select:focus,
+.enxoval-modal__form textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.enxoval-modal__form textarea {
+  resize: vertical;
+}
+
+.enxoval-modal__row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.enxoval-modal__preview {
+  text-align: center;
+}
+
+.enxoval-modal__preview img {
+  max-width: 120px;
+  max-height: 120px;
+  object-fit: contain;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+
+.enxoval-modal__actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--line);
+}
+
+.enxoval-modal__cancel {
+  padding: 0.65rem 1.25rem;
+  border: 1px solid var(--line);
+  background: none;
+  font: inherit;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.enxoval-modal__cancel:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.enxoval-modal__save {
+  padding: 0.65rem 1.5rem;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.enxoval-modal__save:hover:not(:disabled) {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.enxoval-modal__save:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 /* ---- Responsive ---- */
 @media (max-width: 520px) {
   .enxoval {

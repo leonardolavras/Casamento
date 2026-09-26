@@ -1,0 +1,380 @@
+/* ---- Login ---- */
+.noivos-login {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: var(--paper);
+}
+
+.noivos-login__card {
+  text-align: center;
+  max-width: 340px;
+  width: 100%;
+}
+
+.noivos-login__card h1 {
+  font-family: var(--font-serif);
+  font-size: 1.8rem;
+  font-weight: 400;
+  color: var(--ink);
+  margin: 0 0 0.5rem;
+}
+
+.noivos-login__card p {
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+  margin: 0 0 2rem;
+}
+
+.noivos-login__card form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.noivos-login__card input {
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--line);
+  font: inherit;
+  font-size: 1rem;
+  color: var(--ink);
+  background: var(--white);
+  text-align: center;
+  letter-spacing: 4px;
+}
+
+.noivos-login__card input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.noivos-login__input--error {
+  border-color: var(--status-precisamos) !important;
+  animation: shake 0.4s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
+.noivos-login__card button {
+  padding: 0.85rem;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+}
+
+.noivos-login__card button:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.noivos-login__error {
+  color: var(--status-precisamos);
+  font-size: 0.82rem;
+  margin: 0.5rem 0 0;
+}
+
+/* ---- Admin panel ---- */
+.noivos-admin {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 3.5rem 1.25rem 5rem;
+}
+
+.noivos-admin__header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.noivos-admin__header h1 {
+  font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin: 0 0 0.5rem;
+}
+
+.noivos-admin__header p {
+  color: var(--ink-soft);
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+}
+
+.noivos-admin__erro {
+  color: var(--status-precisamos);
+  text-align: center;
+  padding: 0.85rem;
+  background: rgba(161, 73, 62, 0.08);
+  border: 1px solid rgba(161, 73, 62, 0.2);
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.noivos-admin__loading {
+  text-align: center;
+  padding: 3rem;
+  color: var(--ink-soft);
+  font-family: var(--font-serif);
+}
+
+/* ---- Stats ---- */
+.noivos-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.noivos-stat {
+  text-align: center;
+  padding: 1rem 0.5rem;
+  border: 1px solid var(--line);
+  background: var(--white);
+}
+
+.noivos-stat strong {
+  display: block;
+  font-family: var(--font-serif);
+  font-size: 1.6rem;
+  color: var(--ink);
+  line-height: 1;
+}
+
+.noivos-stat span {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--ink-soft);
+}
+
+.noivos-stat--temos strong { color: var(--status-temos); }
+.noivos-stat--queremos strong { color: var(--status-queremos); }
+.noivos-stat--precisamos strong { color: var(--status-precisamos); }
+
+/* ---- Toolbar ---- */
+.noivos-toolbar {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.noivos-toolbar__search {
+  flex: 1;
+  min-width: 200px;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid var(--line);
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--ink);
+  background: var(--white);
+}
+
+.noivos-toolbar__search:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.noivos-toolbar__filters {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.noivos-toolbar__filter {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--line);
+  background: none;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--ink-soft);
+  cursor: pointer;
+  border-radius: 50px;
+  transition: 0.15s;
+}
+
+.noivos-toolbar__filter:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.noivos-toolbar__filter--active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+.noivos-toolbar__add {
+  padding: 0.55rem 1rem;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.noivos-toolbar__add:hover {
+  opacity: 0.9;
+}
+
+/* ---- Table ---- */
+.noivos-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  background: var(--white);
+}
+
+.noivos-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.noivos-table thead {
+  border-bottom: 2px solid var(--line);
+}
+
+.noivos-table th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--ink-soft);
+}
+
+.noivos-table td {
+  padding: 0.65rem 1rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  vertical-align: middle;
+}
+
+.noivos-table__empty {
+  text-align: center;
+  padding: 2rem 1rem !important;
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: var(--ink-faint);
+}
+
+.noivos-table__nome {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.noivos-table__thumb {
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid var(--line);
+  flex-shrink: 0;
+}
+
+.noivos-table__cat {
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+.noivos-table__status {
+  padding: 0.3rem 0.65rem;
+  border: 1px solid;
+  background: none;
+  font: inherit;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  border-radius: 50px;
+  transition: 0.15s;
+}
+
+.noivos-table__status--temos {
+  color: var(--status-temos);
+  border-color: var(--status-temos);
+}
+.noivos-table__status--queremos {
+  color: var(--status-queremos);
+  border-color: var(--status-queremos);
+}
+.noivos-table__status--precisamos {
+  color: var(--status-precisamos);
+  border-color: var(--status-precisamos);
+}
+
+.noivos-table__status:hover {
+  opacity: 0.7;
+}
+
+.noivos-table__qty {
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.noivos-table__actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.noivos-table__actions button {
+  border: none;
+  background: none;
+  padding: 0.35rem;
+  cursor: pointer;
+  color: var(--ink-faint);
+  transition: color 0.15s;
+  display: flex;
+}
+
+.noivos-table__actions button:hover {
+  color: var(--accent);
+}
+
+.noivos-table__del:hover {
+  color: var(--status-precisamos) !important;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 640px) {
+  .noivos-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .noivos-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .noivos-toolbar__search {
+    min-width: 0;
+  }
+  .noivos-toolbar__filters {
+    flex-wrap: wrap;
+  }
+  .noivos-table th:nth-child(4),
+  .noivos-table td:nth-child(4) {
+    display: none;
+  }
+}

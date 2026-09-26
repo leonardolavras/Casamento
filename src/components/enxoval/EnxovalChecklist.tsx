@@ -4,8 +4,11 @@ import { useEnxovalItems } from "../../hooks/useEnxovalItems";
 import {
   ENXOVAL_CATEGORIAS,
   ENXOVAL_CATEGORIA_ICONE,
+  ENXOVAL_STATUS,
   type EnxovalCategoria,
+  type EnxovalItem,
   type EnxovalItemInput,
+  type EnxovalPrioridade,
   type EnxovalStatus,
 } from "../../types/enxoval";
 import { PALETA_CORES } from "../../config/site";
@@ -25,6 +28,7 @@ export function EnxovalChecklist() {
   const [copied, setCopied] = useState(false);
   const [sugestoesCat, setSugestoesCat] = useState<EnxovalCategoria>("Cozinha");
   const [confirmRemove, setConfirmRemove] = useState<string | null>(null);
+  const [editingItem, setEditingItem] = useState<EnxovalItem | null>(null);
 
   const existingNames = useMemo(
     () => new Set(items.map((i) => i.nome.toLowerCase())),
@@ -67,6 +71,7 @@ export function EnxovalChecklist() {
         prioridade: "media",
         preco_estimado: null,
         link: null,
+        imagem_url: null,
         observacoes: null,
       });
       setQuickName("");
@@ -74,15 +79,16 @@ export function EnxovalChecklist() {
     setAdding(false);
   }
 
-  async function handleAddSugestao(nome: string, categoria: EnxovalCategoria) {
+  async function handleAddSugestao(s: (typeof SUGESTOES)[number]) {
     const input: EnxovalItemInput = {
-      nome,
-      categoria,
-      status: "precisamos",
+      nome: s.nome,
+      categoria: s.categoria,
+      status: s.status ?? "precisamos",
       quantidade: 1,
       prioridade: "media",
       preco_estimado: null,
       link: null,
+      imagem_url: s.imagem_url ?? null,
       observacoes: null,
     };
     try { await addItem(input); } catch {}
@@ -113,6 +119,12 @@ export function EnxovalChecklist() {
     } catch {
       window.prompt("Copie o link:", url.toString());
     }
+  }
+
+  async function handleSaveEdit(updated: Partial<EnxovalItemInput>) {
+    if (!editingItem) return;
+    await updateItem(editingItem.id, updated);
+    setEditingItem(null);
   }
 
   function renderItems(list: typeof items, status: EnxovalStatus) {
@@ -165,7 +177,18 @@ export function EnxovalChecklist() {
                         )}
                       </button>
                     )}
-                    <span className={`enxoval-row__nome ${item.status === "temos" ? "enxoval-row__nome--done" : ""}`}>
+                    {item.imagem_url && (
+                      <img
+                        src={item.imagem_url}
+                        alt={item.nome}
+                        className="enxoval-row__img"
+                        loading="lazy"
+                      />
+                    )}
+                    <span
+                      className={`enxoval-row__nome ${item.status === "temos" ? "enxoval-row__nome--done" : ""} ${!guestMode ? "enxoval-row__nome--editable" : ""}`}
+                      onClick={!guestMode ? () => setEditingItem(item) : undefined}
+                    >
                       {item.nome}
                     </span>
                     {item.quantidade > 1 && (
@@ -238,7 +261,6 @@ export function EnxovalChecklist() {
             </div>
           )}
 
-          {/* Status cards */}
           <div className="enxoval-cards">
             <button
               type="button"
@@ -271,7 +293,6 @@ export function EnxovalChecklist() {
             </button>
           </div>
 
-          {/* Expanded item list */}
           {openSection && openSection !== "adicionar" && (
             <div className="enxoval-expand" key={openSection}>
               <div className={`enxoval-expand__header enxoval-expand__header--${openSection}`}>
@@ -285,7 +306,6 @@ export function EnxovalChecklist() {
             </div>
           )}
 
-          {/* Add section */}
           {!guestMode && (
             <>
               <button
@@ -348,7 +368,7 @@ export function EnxovalChecklist() {
                             key={s.nome}
                             type="button"
                             className="enxoval-sugestoes__item"
-                            onClick={() => handleAddSugestao(s.nome, s.categoria)}
+                            onClick={() => handleAddSugestao(s)}
                           >
                             + {s.nome}
                           </button>
@@ -368,6 +388,142 @@ export function EnxovalChecklist() {
           )}
         </>
       )}
+
+      {editingItem && (
+        <EditModal
+          item={editingItem}
+          onSave={handleSaveEdit}
+          onClose={() => setEditingItem(null)}
+        />
+      )}
     </section>
+  );
+}
+
+function EditModal({
+  item,
+  onSave,
+  onClose,
+}: {
+  item: EnxovalItem;
+  onSave: (data: Partial<EnxovalItemInput>) => Promise<void>;
+  onClose: () => void;
+}) {
+  const [nome, setNome] = useState(item.nome);
+  const [categoria, setCategoria] = useState<EnxovalCategoria>(item.categoria);
+  const [status, setStatus] = useState<EnxovalStatus>(item.status);
+  const [quantidade, setQuantidade] = useState(item.quantidade);
+  const [prioridade, setPrioridade] = useState<EnxovalPrioridade>(item.prioridade);
+  const [precoEstimado, setPrecoEstimado] = useState(item.preco_estimado?.toString() ?? "");
+  const [link, setLink] = useState(item.link ?? "");
+  const [imagemUrl, setImagemUrl] = useState(item.imagem_url ?? "");
+  const [observacoes, setObservacoes] = useState(item.observacoes ?? "");
+  const [saving, setSaving] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!nome.trim() || saving) return;
+    setSaving(true);
+    try {
+      await onSave({
+        nome: nome.trim(),
+        categoria,
+        status,
+        quantidade,
+        prioridade,
+        preco_estimado: precoEstimado ? parseFloat(precoEstimado) : null,
+        link: link.trim() || null,
+        imagem_url: imagemUrl.trim() || null,
+        observacoes: observacoes.trim() || null,
+      });
+    } catch {}
+    setSaving(false);
+  }
+
+  return (
+    <div className="enxoval-modal-overlay" onClick={onClose}>
+      <div className="enxoval-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="enxoval-modal__header">
+          <h3>Editar item</h3>
+          <button type="button" className="enxoval-modal__close" onClick={onClose}>
+            ×
+          </button>
+        </div>
+        <form className="enxoval-modal__form" onSubmit={handleSubmit}>
+          <label>
+            <span>Nome</span>
+            <input type="text" value={nome} onChange={(e) => setNome(e.target.value)} />
+          </label>
+
+          <div className="enxoval-modal__row">
+            <label>
+              <span>Categoria</span>
+              <select value={categoria} onChange={(e) => setCategoria(e.target.value as EnxovalCategoria)}>
+                {ENXOVAL_CATEGORIAS.map((c) => (
+                  <option key={c} value={c}>{ENXOVAL_CATEGORIA_ICONE[c]} {c}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span>Status</span>
+              <select value={status} onChange={(e) => setStatus(e.target.value as EnxovalStatus)}>
+                {ENXOVAL_STATUS.map((s) => (
+                  <option key={s} value={s}>{s === "temos" ? "Já temos" : s === "queremos" ? "Queremos" : "Precisamos"}</option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          <div className="enxoval-modal__row">
+            <label>
+              <span>Quantidade</span>
+              <input type="number" min={1} value={quantidade} onChange={(e) => setQuantidade(Number(e.target.value) || 1)} />
+            </label>
+            <label>
+              <span>Prioridade</span>
+              <select value={prioridade} onChange={(e) => setPrioridade(e.target.value as EnxovalPrioridade)}>
+                <option value="baixa">Baixa</option>
+                <option value="media">Média</option>
+                <option value="alta">Alta</option>
+              </select>
+            </label>
+            <label>
+              <span>Preço est.</span>
+              <input type="number" min={0} step="0.01" placeholder="R$" value={precoEstimado} onChange={(e) => setPrecoEstimado(e.target.value)} />
+            </label>
+          </div>
+
+          <label>
+            <span>Link do produto</span>
+            <input type="url" placeholder="https://..." value={link} onChange={(e) => setLink(e.target.value)} />
+          </label>
+
+          <label>
+            <span>URL da imagem</span>
+            <input type="url" placeholder="https://..." value={imagemUrl} onChange={(e) => setImagemUrl(e.target.value)} />
+          </label>
+
+          {imagemUrl.trim() && (
+            <div className="enxoval-modal__preview">
+              <img src={imagemUrl} alt="Preview" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+            </div>
+          )}
+
+          <label>
+            <span>Observações</span>
+            <textarea rows={2} value={observacoes} onChange={(e) => setObservacoes(e.target.value)} />
+          </label>
+
+          <div className="enxoval-modal__actions">
+            <button type="button" className="enxoval-modal__cancel" onClick={onClose}>
+              Cancelar
+            </button>
+            <button type="submit" className="enxoval-modal__save" disabled={saving || !nome.trim()}>
+              {saving ? "Salvando..." : "Salvar"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 }

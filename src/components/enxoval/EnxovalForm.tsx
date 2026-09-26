@@ -22,6 +22,7 @@ const initialState: EnxovalItemInput = {
   prioridade: "media",
   preco_estimado: null,
   link: null,
+  imagem_url: null,
   observacoes: null,
 };
 

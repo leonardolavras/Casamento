@@ -6,6 +6,7 @@ import { EnxovalPage } from "./pages/EnxovalPage";
 import { GaleriaPage } from "./pages/GaleriaPage";
 import { MuralPage } from "./pages/MuralPage";
 import { HistoriaPage } from "./pages/HistoriaPage";
+import { NoivosPage } from "./pages/NoivosPage";
 import { COUPLE } from "./config/site";
 
 function ScrollToTop() {
@@ -31,6 +32,7 @@ function App() {
         <Route path="/mural" element={<MuralPage />} />
         <Route path="/historia" element={<HistoriaPage />} />
         <Route path="/enxoval" element={<EnxovalPage />} />
+        <Route path="/noivos" element={<NoivosPage />} />
       </Routes>
     </BrowserRouter>
   );

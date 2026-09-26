@@ -1,6 +1,11 @@
-import type { EnxovalCategoria } from "../types/enxoval";
+import type { EnxovalCategoria, EnxovalStatus } from "../types/enxoval";
 
-export const SUGESTOES: { nome: string; categoria: EnxovalCategoria }[] = [
+export const SUGESTOES: {
+  nome: string;
+  categoria: EnxovalCategoria;
+  status?: EnxovalStatus;
+  imagem_url?: string;
+}[] = [
   // Cozinha
   { nome: "Jogo de panelas", categoria: "Cozinha" },
   { nome: "Jogo de talheres", categoria: "Cozinha" },
@@ -78,4 +83,7 @@ export const SUGESTOES: { nome: string; categoria: EnxovalCategoria }[] = [
   { nome: "Lanterna", categoria: "Emergências" },
   { nome: "Kit ferramentas", categoria: "Emergências" },
   { nome: "Extensão elétrica", categoria: "Emergências" },
+
+  // Especiais
+  { nome: "Carrinho lotado de Wepink", categoria: "Outros", status: "queremos" },
 ];
