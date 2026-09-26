@@ -157,12 +157,12 @@
   color: var(--ink-soft);
 }
 
-/* ---- Cards clicáveis ---- */
+/* ---- Cards resumo ---- */
 .enxoval-cards {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 0.75rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
 }
 
 .enxoval-card {
@@ -173,20 +173,7 @@
   padding: 1.25rem 0.75rem 1rem;
   border: 1px solid var(--line);
   background: var(--white);
-  cursor: pointer;
-  transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
-  position: relative;
   font-family: inherit;
-}
-
-.enxoval-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
-}
-
-.enxoval-card--open {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
 }
 
 .enxoval-card strong {
@@ -203,17 +190,6 @@
   letter-spacing: 1.5px;
 }
 
-.enxoval-card__arrow {
-  margin-top: 0.25rem;
-  transition: transform 0.3s ease;
-  opacity: 0.4;
-}
-
-.enxoval-card--open .enxoval-card__arrow {
-  transform: rotate(180deg);
-  opacity: 1;
-}
-
 .enxoval-card--temos {
   border-bottom: 3px solid var(--status-temos);
 }
@@ -221,12 +197,6 @@
   color: var(--status-temos);
 }
 .enxoval-card--temos span {
-  color: var(--status-temos);
-}
-.enxoval-card--temos.enxoval-card--open {
-  border-color: var(--status-temos);
-}
-.enxoval-card--temos .enxoval-card__arrow {
   color: var(--status-temos);
 }
 
@@ -239,12 +209,6 @@
 .enxoval-card--queremos span {
   color: var(--status-queremos);
 }
-.enxoval-card--queremos.enxoval-card--open {
-  border-color: var(--status-queremos);
-}
-.enxoval-card--queremos .enxoval-card__arrow {
-  color: var(--status-queremos);
-}
 
 .enxoval-card--precisamos {
   border-bottom: 3px solid var(--status-precisamos);
@@ -255,11 +219,53 @@
 .enxoval-card--precisamos span {
   color: var(--status-precisamos);
 }
-.enxoval-card--precisamos.enxoval-card--open {
-  border-color: var(--status-precisamos);
+
+/* ---- Seções de status (sempre visíveis) ---- */
+.enxoval-section {
+  margin-bottom: 1.5rem;
+  background: var(--white);
+  border: 1px solid var(--line);
 }
-.enxoval-card--precisamos .enxoval-card__arrow {
+
+.enxoval-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.enxoval-section__header h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.enxoval-section__header--temos h3 {
+  color: var(--status-temos);
+}
+.enxoval-section__header--queremos h3 {
+  color: var(--status-queremos);
+}
+.enxoval-section__header--precisamos h3 {
   color: var(--status-precisamos);
+}
+
+.enxoval-section__count {
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+}
+
+.enxoval-section__vazio {
+  padding: 2rem 1.25rem;
+  text-align: center;
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: var(--ink-faint);
+  font-size: 0.95rem;
+  margin: 0;
 }
 
 /* ---- Expandable section ---- */

@@ -27,13 +27,15 @@ const SECTION_TITLE: Record<EnxovalStatus, string> = {
   precisamos: "O que precisamos",
 };
 
+const STATUS_ORDER: EnxovalStatus[] = ["temos", "queremos", "precisamos"];
+
 export function EnxovalChecklist() {
   const { items, loading, error, addItem, updateItem, removeItem } =
     useEnxovalItems();
   const [searchParams] = useSearchParams();
   const guestMode = searchParams.get("convidado") === "1";
 
-  const [openSection, setOpenSection] = useState<EnxovalStatus | "adicionar" | null>(null);
+  const [showAdd, setShowAdd] = useState(false);
   const [quickName, setQuickName] = useState("");
   const [quickCat, setQuickCat] = useState<EnxovalCategoria>("Cozinha");
   const [adding, setAdding] = useState(false);
@@ -66,10 +68,6 @@ export function EnxovalChecklist() {
   );
 
   const pct = items.length ? Math.round((grouped.temos.length / items.length) * 100) : 0;
-
-  function toggleSection(section: EnxovalStatus | "adicionar") {
-    setOpenSection((prev) => (prev === section ? null : section));
-  }
 
   function showError(err: unknown) {
     const msg = err instanceof Error ? err.message : "Erro inesperado";
@@ -160,82 +158,66 @@ export function EnxovalChecklist() {
     setEditingItem(null);
   }
 
-  function renderItems(list: typeof items, status: EnxovalStatus) {
-    if (list.length === 0) {
-      return <p className="enxoval-expand__vazio">{STATUS_EMPTY_MSG[status]}</p>;
-    }
-
+  function renderItemsByCategory(list: typeof items) {
     const byCategory = ENXOVAL_CATEGORIAS.filter((cat) =>
       list.some((i) => i.categoria === cat),
     );
 
-    return (
-      <div className="enxoval-expand__groups">
-        {byCategory.map((cat) => {
-          const catItems = list.filter((i) => i.categoria === cat);
-          return (
-            <div key={cat} className="enxoval-expand__group">
-              <h4 className="enxoval-expand__cat">
-                {ENXOVAL_CATEGORIA_ICONE[cat]} {cat}
-                <span>{catItems.length}</span>
-              </h4>
-              <div className="enxoval-expand__items">
-                {catItems.map((item) => (
-                  <div key={item.id} className={`enxoval-row enxoval-row--${item.status}`}>
-                    {!guestMode && (
-                      <button
-                        type="button"
-                        className="enxoval-row__check"
-                        onClick={() => handleToggleStatus(item.id, item.status)}
-                        aria-label={
-                          item.status === "temos"
-                            ? `Desmarcar ${item.nome}`
-                            : `Marcar ${item.nome} como temos`
-                        }
-                      >
-                        {item.status === "temos" ? (
-                          <span className="enxoval-row__box enxoval-row__box--checked">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                          </span>
-                        ) : (
-                          <span className="enxoval-row__box" />
-                        )}
-                      </button>
+    return byCategory.map((cat) => {
+      const catItems = list.filter((i) => i.categoria === cat);
+      return (
+        <div key={cat} className="enxoval-expand__group">
+          <h4 className="enxoval-expand__cat">
+            {ENXOVAL_CATEGORIA_ICONE[cat]} {cat}
+            <span>{catItems.length}</span>
+          </h4>
+          <div className="enxoval-expand__items">
+            {catItems.map((item) => (
+              <div key={item.id} className={`enxoval-row enxoval-row--${item.status}`}>
+                {!guestMode && (
+                  <button
+                    type="button"
+                    className="enxoval-row__check"
+                    onClick={() => handleToggleStatus(item.id, item.status)}
+                    aria-label={
+                      item.status === "temos"
+                        ? `Desmarcar ${item.nome}`
+                        : `Marcar ${item.nome} como temos`
+                    }
+                  >
+                    {item.status === "temos" ? (
+                      <span className="enxoval-row__box enxoval-row__box--checked">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                      </span>
+                    ) : (
+                      <span className="enxoval-row__box" />
                     )}
-                    {item.imagem_url && (
-                      <img
-                        src={item.imagem_url}
-                        alt={item.nome}
-                        className="enxoval-row__img"
-                        loading="lazy"
-                      />
-                    )}
-                    <span
-                      className={`enxoval-row__nome ${item.status === "temos" ? "enxoval-row__nome--done" : ""} ${!guestMode ? "enxoval-row__nome--editable" : ""}`}
-                      onClick={!guestMode ? () => setEditingItem(item) : undefined}
-                    >
-                      {item.nome}
-                    </span>
-                    {item.quantidade > 1 && (
-                      <span className="enxoval-row__qty">{item.quantidade}x</span>
-                    )}
-                    {!guestMode && (
-                      <button
-                        type="button"
-                        className={`enxoval-row__del ${confirmRemove === item.id ? "enxoval-row__del--confirm" : ""}`}
-                        onClick={() => handleRemove(item.id)}
-                      >
-                        {confirmRemove === item.id ? "remover?" : "×"}
-                      </button>
-                    )}
-                  </div>
-                ))}
+                  </button>
+                )}
+                <span
+                  className={`enxoval-row__nome ${item.status === "temos" ? "enxoval-row__nome--done" : ""} ${!guestMode ? "enxoval-row__nome--editable" : ""}`}
+                  onClick={!guestMode ? () => setEditingItem(item) : undefined}
+                >
+                  {item.nome}
+                </span>
+                {item.quantidade > 1 && (
+                  <span className="enxoval-row__qty">{item.quantidade}x</span>
+                )}
+                {!guestMode && (
+                  <button
+                    type="button"
+                    className={`enxoval-row__del ${confirmRemove === item.id ? "enxoval-row__del--confirm" : ""}`}
+                    onClick={() => handleRemove(item.id)}
+                  >
+                    {confirmRemove === item.id ? "remover?" : "×"}
+                  </button>
+                )}
               </div>
-            </div>
-          );
-        })}
-      </div>
-    );
+            ))}
+          </div>
+        </div>
+      );
+    });
   }
 
   return (
@@ -289,40 +271,41 @@ export function EnxovalChecklist() {
           )}
 
           <div className="enxoval-cards">
-            {(["temos", "queremos", "precisamos"] as const).map((s) => (
-              <button
-                key={s}
-                type="button"
-                className={`enxoval-card enxoval-card--${s} ${openSection === s ? "enxoval-card--open" : ""}`}
-                onClick={() => toggleSection(s)}
-              >
+            {STATUS_ORDER.map((s) => (
+              <div key={s} className={`enxoval-card enxoval-card--${s}`}>
                 <strong>{grouped[s].length}</strong>
                 <span>{ENXOVAL_STATUS_LABEL[s]}</span>
-                <svg className="enxoval-card__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-              </button>
+              </div>
             ))}
           </div>
 
-          {openSection && openSection !== "adicionar" && (
-            <div className="enxoval-expand" key={openSection}>
-              <div className={`enxoval-expand__header enxoval-expand__header--${openSection}`}>
-                <h3>{SECTION_TITLE[openSection]}</h3>
+          {STATUS_ORDER.map((status) => (
+            <div key={status} className="enxoval-section">
+              <div className={`enxoval-section__header enxoval-section__header--${status}`}>
+                <h3>{SECTION_TITLE[status]}</h3>
+                <span className="enxoval-section__count">{grouped[status].length}</span>
               </div>
-              {renderItems(grouped[openSection], openSection)}
+              {grouped[status].length === 0 ? (
+                <p className="enxoval-section__vazio">{STATUS_EMPTY_MSG[status]}</p>
+              ) : (
+                <div className="enxoval-expand__groups">
+                  {renderItemsByCategory(grouped[status])}
+                </div>
+              )}
             </div>
-          )}
+          ))}
 
           {!guestMode && (
             <>
               <button
                 type="button"
-                className={`enxoval-add-btn ${openSection === "adicionar" ? "enxoval-add-btn--open" : ""}`}
-                onClick={() => toggleSection("adicionar")}
+                className={`enxoval-add-btn ${showAdd ? "enxoval-add-btn--open" : ""}`}
+                onClick={() => setShowAdd((v) => !v)}
               >
                 + Adicionar itens
               </button>
 
-              {openSection === "adicionar" && (
+              {showAdd && (
                 <div className="enxoval-expand">
                   <form className="enxoval-quickadd" onSubmit={handleQuickAdd}>
                     <input
