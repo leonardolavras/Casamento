@@ -6,7 +6,7 @@ export const COUPLE = {
 };
 
 // Data do casamento (ano, mês [0-11], dia, hora, minuto).
-export const WEDDING_DATE = new Date(2028, 2, 11, 16, 0, 0);
+export const WEDDING_DATE = new Date(2028, 2, 11, 12, 0, 0);
 
 export const HERO_PHOTO = "/fotos/capa.jpg";
 
@@ -24,7 +24,7 @@ export interface EventoInfo {
 export const CERIMONIA: EventoInfo = {
   titulo: "Cerimônia",
   data: "11 de março de 2028",
-  hora: "16h (a confirmar)",
+  hora: "12h",
   local: "Local a definir",
   endereco: "Endereço a definir",
   mapaUrl: null,
@@ -33,7 +33,7 @@ export const CERIMONIA: EventoInfo = {
 export const RECEPCAO: EventoInfo = {
   titulo: "Recepção",
   data: "11 de março de 2028",
-  hora: "Logo após a cerimônia",
+  hora: "Logo após a cerimônia (almoço)",
   local: "Local a definir",
   endereco: "Endereço a definir",
   mapaUrl: null,
@@ -45,9 +45,6 @@ export const PIX_KEY: string | null = null;
 
 export const PALETA_CORES: { nome: string; hex: string; descricao?: string }[] = [
   { nome: "Coral", hex: "#DAC8B3", descricao: "Bege Perfeito" },
-  { nome: "Terracota", hex: "#A15C3E", descricao: "Acento quente" },
-  { nome: "Creme", hex: "#FBF7F1", descricao: "Base suave" },
-  { nome: "Grafite", hex: "#201D1A", descricao: "Contraste" },
 ]; // Coloque sua chave Pix aqui (CPF, email, telefone ou chave aleatória)
 
 export const GALLERY_PHOTOS: { src: string; caption: string }[] = [
