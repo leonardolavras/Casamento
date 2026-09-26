@@ -22,17 +22,37 @@ export function useMural() {
       });
   }, []);
 
+  useEffect(() => {
+    if (!isSupabaseConfigured) return;
+
+    const channel = supabase
+      .channel("mural-realtime")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "mural_recados" },
+        (payload) => {
+          setRecados((prev) => {
+            const novo = payload.new as MuralRecado;
+            if (prev.some((r) => r.id === novo.id)) return prev;
+            return [novo, ...prev];
+          });
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   const enviar = useCallback(async (nome: string, mensagem: string) => {
     if (!isSupabaseConfigured) return false;
     setSending(true);
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from("mural_recados")
-      .insert({ nome, mensagem })
-      .select()
-      .single();
+      .insert({ nome, mensagem });
     setSending(false);
-    if (error || !data) return false;
-    setRecados((prev) => [data, ...prev]);
+    if (error) return false;
     return true;
   }, []);
 

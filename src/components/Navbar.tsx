@@ -45,8 +45,9 @@ export function Navbar() {
 
       <div className="navbar__links navbar__links--desktop">
         <NavLink to="/" end className={linkClass}>Inicio</NavLink>
-        <a href={isHome ? "#galeria" : "/#galeria"} className="navbar__link">Fotos</a>
-        <a href={isHome ? "#mural" : "/#mural"} className="navbar__link">Recados</a>
+        <NavLink to="/galeria" className={linkClass}>Fotos</NavLink>
+        <NavLink to="/historia" className={linkClass}>História</NavLink>
+        <NavLink to="/mural" className={linkClass}>Recados</NavLink>
         <NavLink to="/enxoval" className={linkClass}>Enxoval</NavLink>
       </div>
 
@@ -62,8 +63,9 @@ export function Navbar() {
 
       <div className={`navbar__mobile ${open ? "navbar__mobile--open" : ""}`}>
         <NavLink to="/" end className={linkClass} onClick={() => setOpen(false)}>Inicio</NavLink>
-        <a href={isHome ? "#galeria" : "/#galeria"} className="navbar__link" onClick={() => setOpen(false)}>Fotos</a>
-        <a href={isHome ? "#mural" : "/#mural"} className="navbar__link" onClick={() => setOpen(false)}>Recados</a>
+        <NavLink to="/galeria" className={linkClass} onClick={() => setOpen(false)}>Fotos</NavLink>
+        <NavLink to="/historia" className={linkClass} onClick={() => setOpen(false)}>História</NavLink>
+        <NavLink to="/mural" className={linkClass} onClick={() => setOpen(false)}>Recados</NavLink>
         <NavLink to="/enxoval" className={linkClass} onClick={() => setOpen(false)}>Enxoval</NavLink>
       </div>
     </nav>

@@ -46,6 +46,43 @@ export function useEnxovalItems(): UseEnxovalItemsResult {
     load();
   }, [load]);
 
+  useEffect(() => {
+    if (!isSupabaseConfigured) return;
+
+    const channel = supabase
+      .channel("enxoval-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "enxoval_itens" },
+        (payload) => {
+          if (payload.eventType === "INSERT") {
+            setItems((prev) => {
+              if (prev.some((i) => i.id === (payload.new as EnxovalItem).id))
+                return prev;
+              return [...prev, payload.new as EnxovalItem];
+            });
+          } else if (payload.eventType === "UPDATE") {
+            setItems((prev) =>
+              prev.map((i) =>
+                i.id === (payload.new as EnxovalItem).id
+                  ? (payload.new as EnxovalItem)
+                  : i,
+              ),
+            );
+          } else if (payload.eventType === "DELETE") {
+            setItems((prev) =>
+              prev.filter((i) => i.id !== (payload.old as { id: string }).id),
+            );
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   const addItem = useCallback(
     async (input: EnxovalItemInput) => {
       if (!isSupabaseConfigured) throw new Error(CONFIG_ERROR);
@@ -53,9 +90,8 @@ export function useEnxovalItems(): UseEnxovalItemsResult {
         .from("enxoval_itens")
         .insert(input);
       if (insertError) throw new Error(insertError.message);
-      await load();
     },
-    [load],
+    [],
   );
 
   const updateItem = useCallback(
@@ -66,9 +102,8 @@ export function useEnxovalItems(): UseEnxovalItemsResult {
         .update(input)
         .eq("id", id);
       if (updateError) throw new Error(updateError.message);
-      await load();
     },
-    [load],
+    [],
   );
 
   const removeItem = useCallback(
@@ -79,9 +114,8 @@ export function useEnxovalItems(): UseEnxovalItemsResult {
         .delete()
         .eq("id", id);
       if (deleteError) throw new Error(deleteError.message);
-      await load();
     },
-    [load],
+    [],
   );
 
   return { items, loading, error, addItem, updateItem, removeItem, reload: load };

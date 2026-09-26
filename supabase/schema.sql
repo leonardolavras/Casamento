@@ -98,3 +98,7 @@ drop policy if exists "Mural: escrita publica" on public.mural_recados;
 create policy "Mural: escrita publica"
   on public.mural_recados for insert
   with check (true);
+
+-- Habilita Supabase Realtime nas tabelas para sync em tempo real
+alter publication supabase_realtime add table public.enxoval_itens;
+alter publication supabase_realtime add table public.mural_recados;
