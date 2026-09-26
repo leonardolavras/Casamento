@@ -56,7 +56,6 @@ export function Hero() {
       </div>
 
       <div className="hero__scroll fade-in fade-in--3">
-        <span>Scroll</span>
         <div className="hero__scroll-bar"><div className="hero__scroll-fill" /></div>
       </div>
     </section>

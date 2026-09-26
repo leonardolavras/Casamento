@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useEnxovalItems } from "../../hooks/useEnxovalItems";
 import {
@@ -28,6 +28,89 @@ const SECTION_TITLE: Record<EnxovalStatus, string> = {
 };
 
 const STATUS_ORDER: EnxovalStatus[] = ["temos", "queremos", "precisamos"];
+
+function scrollToSection(status: EnxovalStatus) {
+  const el = document.getElementById(`enxoval-${status}`);
+  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+/* ---- Owner row ---- */
+function OwnerRow({
+  item,
+  onToggle,
+  onEdit,
+  onRemove,
+  confirmId,
+}: {
+  item: EnxovalItem;
+  onToggle: (id: string, s: EnxovalStatus) => void;
+  onEdit: (item: EnxovalItem) => void;
+  onRemove: (id: string) => void;
+  confirmId: string | null;
+}) {
+  return (
+    <div className={`enxoval-row enxoval-row--${item.status}`}>
+      <button
+        type="button"
+        className="enxoval-row__check"
+        onClick={() => onToggle(item.id, item.status)}
+        aria-label={
+          item.status === "temos"
+            ? `Desmarcar ${item.nome}`
+            : `Marcar ${item.nome} como temos`
+        }
+      >
+        {item.status === "temos" ? (
+          <span className="enxoval-row__box enxoval-row__box--checked">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </span>
+        ) : (
+          <span className="enxoval-row__box" />
+        )}
+      </button>
+      <span
+        className={`enxoval-row__nome enxoval-row__nome--editable ${item.status === "temos" ? "enxoval-row__nome--done" : ""}`}
+        onClick={() => onEdit(item)}
+      >
+        {item.nome}
+      </span>
+      {item.quantidade > 1 && (
+        <span className="enxoval-row__qty">{item.quantidade}x</span>
+      )}
+      <button
+        type="button"
+        className={`enxoval-row__del ${confirmId === item.id ? "enxoval-row__del--confirm" : ""}`}
+        onClick={() => onRemove(item.id)}
+      >
+        {confirmId === item.id ? "remover?" : "×"}
+      </button>
+    </div>
+  );
+}
+
+/* ---- Guest row ---- */
+function GuestRow({ item }: { item: EnxovalItem }) {
+  return (
+    <div className={`enxoval-row enxoval-row--${item.status} enxoval-row--guest`}>
+      <span className={`enxoval-row__nome ${item.status === "temos" ? "enxoval-row__nome--done" : ""}`}>
+        {item.nome}
+      </span>
+      {item.quantidade > 1 && (
+        <span className="enxoval-row__qty">{item.quantidade}x</span>
+      )}
+      {item.status !== "temos" && item.link && (
+        <a
+          href={item.link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="enxoval-row__gift"
+        >
+          Presentear
+        </a>
+      )}
+    </div>
+  );
+}
 
 export function EnxovalChecklist() {
   const { items, loading, error, addItem, updateItem, removeItem } =
@@ -69,7 +152,7 @@ export function EnxovalChecklist() {
 
   const pct = items.length ? Math.round((grouped.temos.length / items.length) * 100) : 0;
 
-  function showError(err: unknown) {
+  function showErrorMsg(err: unknown) {
     const msg = err instanceof Error ? err.message : "Erro inesperado";
     setActionError(msg);
     setTimeout(() => setActionError(null), 4000);
@@ -93,52 +176,48 @@ export function EnxovalChecklist() {
       });
       setQuickName("");
     } catch (err) {
-      showError(err);
+      showErrorMsg(err);
     }
     setAdding(false);
   }
 
   async function handleAddSugestao(s: (typeof SUGESTOES)[number]) {
-    const input: EnxovalItemInput = {
-      nome: s.nome,
-      categoria: s.categoria,
-      status: s.status ?? "precisamos",
-      quantidade: 1,
-      prioridade: "media",
-      preco_estimado: null,
-      link: null,
-      imagem_url: s.imagem_url ?? null,
-      observacoes: null,
-    };
     try {
-      await addItem(input);
+      await addItem({
+        nome: s.nome,
+        categoria: s.categoria,
+        status: s.status ?? "precisamos",
+        quantidade: 1,
+        prioridade: "media",
+        preco_estimado: null,
+        link: null,
+        imagem_url: s.imagem_url ?? null,
+        observacoes: null,
+      });
     } catch (err) {
-      showError(err);
+      showErrorMsg(err);
     }
   }
 
-  async function handleToggleStatus(id: string, currentStatus: EnxovalStatus) {
+  const handleToggleStatus = useCallback(async (id: string, currentStatus: EnxovalStatus) => {
     const next: EnxovalStatus = currentStatus === "temos" ? "precisamos" : "temos";
     try {
       await updateItem(id, { status: next });
     } catch (err) {
-      showError(err);
+      showErrorMsg(err);
     }
-  }
+  }, [updateItem]);
 
-  async function handleRemove(id: string) {
-    if (confirmRemove === id) {
-      try {
-        await removeItem(id);
-      } catch (err) {
-        showError(err);
+  const handleRemove = useCallback(async (id: string) => {
+    setConfirmRemove((prev) => {
+      if (prev === id) {
+        removeItem(id).catch(showErrorMsg);
+        return null;
       }
-      setConfirmRemove(null);
-    } else {
-      setConfirmRemove(id);
       setTimeout(() => setConfirmRemove(null), 3000);
-    }
-  }
+      return id;
+    });
+  }, [removeItem]);
 
   async function handleShare() {
     const url = new URL(window.location.href);
@@ -158,12 +237,12 @@ export function EnxovalChecklist() {
     setEditingItem(null);
   }
 
-  function renderItemsByCategory(list: typeof items) {
-    const byCategory = ENXOVAL_CATEGORIAS.filter((cat) =>
+  function renderCategoryGroup(list: EnxovalItem[]) {
+    const cats = ENXOVAL_CATEGORIAS.filter((cat) =>
       list.some((i) => i.categoria === cat),
     );
 
-    return byCategory.map((cat) => {
+    return cats.map((cat) => {
       const catItems = list.filter((i) => i.categoria === cat);
       return (
         <div key={cat} className="enxoval-expand__group">
@@ -172,48 +251,20 @@ export function EnxovalChecklist() {
             <span>{catItems.length}</span>
           </h4>
           <div className="enxoval-expand__items">
-            {catItems.map((item) => (
-              <div key={item.id} className={`enxoval-row enxoval-row--${item.status}`}>
-                {!guestMode && (
-                  <button
-                    type="button"
-                    className="enxoval-row__check"
-                    onClick={() => handleToggleStatus(item.id, item.status)}
-                    aria-label={
-                      item.status === "temos"
-                        ? `Desmarcar ${item.nome}`
-                        : `Marcar ${item.nome} como temos`
-                    }
-                  >
-                    {item.status === "temos" ? (
-                      <span className="enxoval-row__box enxoval-row__box--checked">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                      </span>
-                    ) : (
-                      <span className="enxoval-row__box" />
-                    )}
-                  </button>
-                )}
-                <span
-                  className={`enxoval-row__nome ${item.status === "temos" ? "enxoval-row__nome--done" : ""} ${!guestMode ? "enxoval-row__nome--editable" : ""}`}
-                  onClick={!guestMode ? () => setEditingItem(item) : undefined}
-                >
-                  {item.nome}
-                </span>
-                {item.quantidade > 1 && (
-                  <span className="enxoval-row__qty">{item.quantidade}x</span>
-                )}
-                {!guestMode && (
-                  <button
-                    type="button"
-                    className={`enxoval-row__del ${confirmRemove === item.id ? "enxoval-row__del--confirm" : ""}`}
-                    onClick={() => handleRemove(item.id)}
-                  >
-                    {confirmRemove === item.id ? "remover?" : "×"}
-                  </button>
-                )}
-              </div>
-            ))}
+            {catItems.map((item) =>
+              guestMode ? (
+                <GuestRow key={item.id} item={item} />
+              ) : (
+                <OwnerRow
+                  key={item.id}
+                  item={item}
+                  onToggle={handleToggleStatus}
+                  onEdit={setEditingItem}
+                  onRemove={handleRemove}
+                  confirmId={confirmRemove}
+                />
+              ),
+            )}
           </div>
         </div>
       );
@@ -223,8 +274,12 @@ export function EnxovalChecklist() {
   return (
     <section className="enxoval">
       <header className="enxoval__header">
-        <h1>Nosso Enxoval</h1>
-        <p>Tudo que já temos e o que ainda falta para a nossa casa nova.</p>
+        <h1>{guestMode ? "Lista de Presentes" : "Nosso Enxoval"}</h1>
+        <p>
+          {guestMode
+            ? "Veja o que ainda precisamos e escolha um presente especial."
+            : "Tudo que já temos e o que ainda falta para a nossa casa nova."}
+        </p>
       </header>
 
       {PALETA_CORES.length > 0 && (
@@ -272,15 +327,20 @@ export function EnxovalChecklist() {
 
           <div className="enxoval-cards">
             {STATUS_ORDER.map((s) => (
-              <div key={s} className={`enxoval-card enxoval-card--${s}`}>
+              <button
+                key={s}
+                type="button"
+                className={`enxoval-card enxoval-card--${s}`}
+                onClick={() => scrollToSection(s)}
+              >
                 <strong>{grouped[s].length}</strong>
                 <span>{ENXOVAL_STATUS_LABEL[s]}</span>
-              </div>
+              </button>
             ))}
           </div>
 
           {STATUS_ORDER.map((status) => (
-            <div key={status} className="enxoval-section">
+            <div key={status} id={`enxoval-${status}`} className="enxoval-section">
               <div className={`enxoval-section__header enxoval-section__header--${status}`}>
                 <h3>{SECTION_TITLE[status]}</h3>
                 <span className="enxoval-section__count">{grouped[status].length}</span>
@@ -289,7 +349,7 @@ export function EnxovalChecklist() {
                 <p className="enxoval-section__vazio">{STATUS_EMPTY_MSG[status]}</p>
               ) : (
                 <div className="enxoval-expand__groups">
-                  {renderItemsByCategory(grouped[status])}
+                  {renderCategoryGroup(grouped[status])}
                 </div>
               )}
             </div>
@@ -367,18 +427,16 @@ export function EnxovalChecklist() {
                   </div>
                 </div>
               )}
-            </>
-          )}
 
-          {!guestMode && (
-            <button type="button" className="enxoval-share" onClick={handleShare}>
-              {copied ? "Link copiado!" : "Compartilhar com convidados"}
-            </button>
+              <button type="button" className="enxoval-share" onClick={handleShare}>
+                {copied ? "Link copiado!" : "Compartilhar com convidados"}
+              </button>
+            </>
           )}
         </>
       )}
 
-      {editingItem && (
+      {editingItem && !guestMode && (
         <ItemEditModal
           item={editingItem}
           onSave={handleSaveEdit}
