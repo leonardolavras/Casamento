@@ -83,8 +83,8 @@ export function Gallery() {
       </div>
 
       {current !== null && (
-        <div className="lightbox-overlay" onClick={close}>
-          <button className="lightbox-close" aria-label="Fechar">&times;</button>
+        <div className="lightbox-overlay" onClick={close} role="dialog" aria-modal="true">
+          <button className="lightbox-close" onClick={close} aria-label="Fechar">&times;</button>
           <button
             className="lightbox-nav lightbox-nav--prev"
             onClick={(e) => { e.stopPropagation(); prev(); }}
@@ -97,6 +97,7 @@ export function Gallery() {
             src={GALLERY_PHOTOS[current].src}
             alt={GALLERY_PHOTOS[current].caption}
             key={GALLERY_PHOTOS[current].src}
+            onClick={(e) => e.stopPropagation()}
           />
           <button
             className="lightbox-nav lightbox-nav--next"
