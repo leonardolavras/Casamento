@@ -49,6 +49,7 @@ export function Navbar() {
         <NavLink to="/historia" className={linkClass}>História</NavLink>
         <NavLink to="/mural" className={linkClass}>Recados</NavLink>
         <NavLink to="/enxoval" className={linkClass}>Enxoval</NavLink>
+        <NavLink to="/noivos" className={linkClass}>Para os Noivos</NavLink>
       </div>
 
       <button
@@ -67,6 +68,7 @@ export function Navbar() {
         <NavLink to="/historia" className={linkClass} onClick={() => setOpen(false)}>História</NavLink>
         <NavLink to="/mural" className={linkClass} onClick={() => setOpen(false)}>Recados</NavLink>
         <NavLink to="/enxoval" className={linkClass} onClick={() => setOpen(false)}>Enxoval</NavLink>
+        <NavLink to="/noivos" className={linkClass} onClick={() => setOpen(false)}>Para os Noivos</NavLink>
       </div>
     </nav>
   );
