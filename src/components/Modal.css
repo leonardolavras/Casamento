@@ -2,7 +2,7 @@
   position: fixed;
   inset: 0;
   z-index: 300;
-  background: rgba(42, 42, 42, 0.45);
+  background: rgba(32, 29, 26, 0.5);
   backdrop-filter: blur(3px);
   display: flex;
   align-items: flex-start;
@@ -13,22 +13,17 @@
 }
 
 @keyframes modal-fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .modal-content {
   position: relative;
-  background: var(--bg-paper);
-  border-radius: 16px;
-  padding: 2rem 1.5rem 1.5rem;
+  background: var(--paper);
+  padding: 2.25rem 1.75rem 1.75rem;
   max-width: 560px;
   width: 100%;
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--shadow-lg);
   animation: modal-pop-in 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
@@ -45,7 +40,8 @@
 
 .modal-title {
   font-size: 1.4rem;
-  color: var(--gold);
+  font-weight: 500;
+  color: var(--ink);
   margin-bottom: 1rem;
 }
 
@@ -62,5 +58,5 @@
 }
 
 .modal-close:hover {
-  color: var(--gold);
+  color: var(--accent);
 }

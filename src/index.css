@@ -1,20 +1,31 @@
 :root {
-  --bg-paper: #f7f5f0;
-  --bg-alt: #f0ede6;
-  --ink: #2a2a2a;
-  --ink-soft: #666;
-  --gold: #c5a059;
-  --gold-soft: rgba(197, 160, 89, 0.2);
-  --white: #fff;
+  --paper: #fbf7f1;
+  --paper-alt: #f2ece1;
+  --white: #ffffff;
+  --ink: #201d1a;
+  --ink-soft: #6c655c;
+  --ink-faint: #a39a8d;
+  --line: #e3dbcb;
 
-  --font-serif: "Cormorant Garamond", serif;
-  --font-sans: "Montserrat", system-ui, sans-serif;
-  --font-script: "Pinyon Script", cursive;
+  --accent: #a15c3e;
+  --accent-dark: #7c4630;
+  --accent-soft: rgba(161, 92, 62, 0.1);
 
-  font: 16px/145% var(--font-sans);
+  --status-temos: #4b7a5a;
+  --status-queremos: #ab8433;
+  --status-precisamos: #a1493e;
+
+  --font-serif: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --font-sans: "Inter", system-ui, sans-serif;
+
+  --shadow-sm: 0 1px 2px rgba(32, 29, 26, 0.06);
+  --shadow-md: 0 12px 32px rgba(32, 29, 26, 0.08);
+  --shadow-lg: 0 24px 64px rgba(32, 29, 26, 0.14);
+
+  font: 16px/1.6 var(--font-sans);
   color-scheme: light;
   color: var(--ink);
-  background: var(--bg-paper);
+  background: var(--paper);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -29,6 +40,19 @@ html {
   scroll-behavior: smooth;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 body {
   margin: 0;
   min-height: 100svh;
@@ -39,53 +63,110 @@ h1,
 h2,
 h3 {
   font-family: var(--font-serif);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--ink);
+  line-height: 1.1;
 }
 
 p {
   margin: 0;
 }
 
+a {
+  color: inherit;
+}
+
+button {
+  font-family: inherit;
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+}
+
 ::-webkit-scrollbar {
   width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--bg-paper);
+  background: var(--paper);
 }
 ::-webkit-scrollbar-thumb {
-  background-color: var(--gold);
+  background-color: var(--ink-faint);
   border-radius: 20px;
-  border: 2px solid var(--bg-paper);
+  border: 2px solid var(--paper);
 }
 
 /* Seções da página inicial compartilham este padrão de título/espaçamento */
 .section-container {
-  padding: 70px 20px;
-  max-width: 1100px;
+  padding: 96px 24px;
+  max-width: 1120px;
   margin: 0 auto;
 }
 
-.section-title {
-  font-size: 2.2rem;
+.section-heading {
   text-align: center;
-  margin-bottom: 50px;
-  letter-spacing: -0.5px;
-  color: var(--gold);
-  position: relative;
+  margin-bottom: 56px;
 }
 
-.section-title::after {
-  content: "";
+.section-eyebrow {
   display: block;
-  width: 40px;
-  height: 1px;
-  background: var(--gold);
-  margin: 15px auto 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2.5px;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+
+.section-title {
+  font-size: clamp(1.9rem, 3.2vw, 2.6rem);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--ink);
 }
 
 .bg-alt {
-  background-color: var(--bg-alt);
+  background-color: var(--paper-alt);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1.5rem;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  text-decoration: none;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.btn--primary {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+.btn--primary:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.btn--ghost {
+  background: transparent;
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.btn--ghost:hover {
+  background: var(--ink);
+  color: var(--paper);
 }
 
 /* Lightbox reutilizado pela galeria da Home e pelas fotos do enxoval */
@@ -94,8 +175,8 @@ p {
   inset: 0;
   z-index: 200;
   padding-top: 50px;
-  background: rgba(0, 0, 0, 0.9);
-  backdrop-filter: blur(5px);
+  background: rgba(20, 18, 16, 0.92);
+  backdrop-filter: blur(6px);
   cursor: zoom-out;
 }
 
@@ -104,10 +185,9 @@ p {
   display: block;
   max-width: 90%;
   max-height: 80vh;
-  border: 5px solid #fff;
   border-radius: 4px;
-  box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
-  animation: lightbox-zoom-in 0.3s;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: lightbox-zoom-in 0.25s ease-out;
 }
 
 .lightbox-close {
@@ -116,15 +196,17 @@ p {
   right: 35px;
   color: #f1f1f1;
   font-size: 40px;
-  font-weight: bold;
+  font-weight: 300;
   cursor: pointer;
 }
 
 @keyframes lightbox-zoom-in {
   from {
-    transform: scale(0);
+    opacity: 0;
+    transform: scale(0.96);
   }
   to {
+    opacity: 1;
     transform: scale(1);
   }
 }

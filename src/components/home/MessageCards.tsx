@@ -7,31 +7,34 @@ export function MessageCards() {
 
   return (
     <section className="section-container">
-      <h2 className="section-title">Nossa história</h2>
-      <div className="cards">
-        {MESSAGE_CARDS.map((card, index) => (
-          <div
-            key={card.titulo}
-            className="card-wrapper"
-            onClick={() =>
-              setOpenIndex((current) => (current === index ? null : index))
-            }
-          >
-            <div
-              className={`card-3d ${openIndex === index ? "card-3d--open" : ""}`}
+      <div className="section-heading">
+        <span className="section-eyebrow">Chapter one</span>
+        <h2 className="section-title">Nossa história</h2>
+      </div>
+
+      <div className="story-cards">
+        {MESSAGE_CARDS.map((card, index) => {
+          const num = String(index + 1).padStart(2, "0");
+          const isOpen = openIndex === index;
+          return (
+            <button
+              key={card.titulo}
+              type="button"
+              className={`story-card ${isOpen ? "story-card--open" : ""}`}
+              onClick={() =>
+                setOpenIndex((current) => (current === index ? null : index))
+              }
+              aria-expanded={isOpen}
             >
-              <div className="card-face card-face--front">
-                <h3 className="card-script">{card.titulo}</h3>
-                <div className="card-sep" />
-              </div>
-              <div className="card-face card-face--back">
-                <div className="card-frame">
-                  <p>{card.texto}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
+              <span className="story-card__num">{num}</span>
+              <h3 className="story-card__title">{card.titulo}</h3>
+              <p className="story-card__text">{card.texto}</p>
+              <span className="story-card__cta" aria-hidden="true">
+                {isOpen ? "Fechar" : "Ler"}
+              </span>
+            </button>
+          );
+        })}
       </div>
     </section>
   );

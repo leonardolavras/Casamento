@@ -1,6 +1,42 @@
 .home-footer {
   text-align: center;
-  padding: 50px 20px;
-  opacity: 0.6;
-  font-size: 0.8rem;
+  padding: 4rem 20px 3rem;
+  background: var(--paper-alt);
+  border-top: 1px solid var(--line);
+}
+
+.home-footer__monogram {
+  font-family: var(--font-serif);
+  font-size: 1.75rem;
+  color: var(--ink);
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  margin-bottom: 1rem;
+}
+
+.home-footer__monogram em {
+  font-size: 1rem;
+  font-style: italic;
+  color: var(--accent);
+}
+
+.home-footer__names {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 2.5px;
+  color: var(--ink-soft);
+  margin-bottom: 0.4rem;
+}
+
+.home-footer__names span {
+  color: var(--ink-faint);
+  padding: 0 0.4rem;
+}
+
+.home-footer__year {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 0.9rem;
+  color: var(--ink-faint);
 }

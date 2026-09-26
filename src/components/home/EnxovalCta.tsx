@@ -5,14 +5,20 @@ export function EnxovalCta() {
   return (
     <section className="section-container">
       <div className="enxoval-cta">
-        <span className="enxoval-cta__emoji">💛</span>
-        <h2>Quer nos ajudar a montar nosso lar?</h2>
-        <p>
-          Preparamos uma lista com tudo que já temos, o que estamos
-          namorando e o que ainda precisamos para a nossa casa nova.
+        <div className="enxoval-cta__mark" aria-hidden="true">
+          <span />
+          <span />
+        </div>
+        <span className="section-eyebrow">Nosso lar</span>
+        <h2 className="enxoval-cta__title">Ajude-nos a montar nossa casa</h2>
+        <p className="enxoval-cta__lead">
+          Preparamos uma lista viva com tudo que já temos, o que estamos
+          namorando e o que ainda precisamos. Escolher qualquer item é um jeito
+          especial de estar com a gente nesse começo.
         </p>
-        <Link to="/enxoval" className="enxoval-cta__botao">
-          Ver lista de enxoval
+        <Link to="/enxoval" className="btn btn--primary">
+          Ver a lista de enxoval
+          <span aria-hidden="true">→</span>
         </Link>
       </div>
     </section>

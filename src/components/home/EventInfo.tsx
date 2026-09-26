@@ -29,8 +29,11 @@ export function EventInfo() {
   const mesmoLocal = CERIMONIA.local === RECEPCAO.local;
 
   return (
-    <section className="section-container bg-alt event-info">
-      <h2 className="section-title">Onde e quando</h2>
+    <section id="onde-e-quando" className="section-container bg-alt">
+      <div className="section-heading">
+        <span className="section-eyebrow">Cerimônia &amp; recepção</span>
+        <h2 className="section-title">Onde e quando</h2>
+      </div>
       <div className="event-info__cards">
         <EventCard evento={CERIMONIA} />
         {!mesmoLocal && <EventCard evento={RECEPCAO} />}

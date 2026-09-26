@@ -1,10 +1,15 @@
+import { useEffect } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Navbar } from "./components/Navbar";
 import { Home } from "./pages/Home";
 import { EnxovalPage } from "./pages/EnxovalPage";
-import "./App.css";
+import { COUPLE } from "./config/site";
 
 function App() {
+  useEffect(() => {
+    document.title = `${COUPLE.nome1} & ${COUPLE.nome2}`;
+  }, []);
+
   return (
     <BrowserRouter>
       <Navbar />
