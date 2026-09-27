@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 /** Foto do item ou, sem foto, a inicial do nome sobre um fundo neutro. */
-export function GiftThumb({ nome, src, size = "md" }: { nome: string; src: string | null; size?: "sm" | "md" }) {
+export function GiftThumb({ nome, src, size = "md" }: { nome: string; src: string | null; size?: "sm" | "md" | "lg" }) {
   const [falhou, setFalhou] = useState(false);
   const mostrarFoto = src && !falhou;
 

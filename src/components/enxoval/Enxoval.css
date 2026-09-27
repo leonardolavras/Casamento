@@ -1,5 +1,5 @@
 .enxoval {
-  max-width: 720px;
+  max-width: 1040px;
   margin: 0 auto;
   padding: 6rem 1.25rem 5rem;
 }
@@ -63,18 +63,114 @@
   margin: 0;
 }
 
-/* ---- Filtro por categoria ---- */
+/* ---- "Escolher um valor" ---- */
+.gift-livre {
+  width: 100%;
+  max-width: 560px;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 1.5rem;
+  padding: 0.9rem 1rem;
+  border: 1.5px dashed var(--ink-faint);
+  border-radius: 20px;
+  background: var(--white);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.gift-livre:hover {
+  border-color: var(--accent);
+}
+
+.gift-livre:hover .gift-pill {
+  background: var(--accent);
+  color: var(--white);
+}
+
+.gift-livre__icone {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.gift-livre__texto {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.gift-livre__texto strong {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.gift-livre__texto span {
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+}
+
+/* ---- Filtros (categoria + ordem) ---- */
+.gift-toolbar {
+  position: sticky;
+  top: 4.5rem;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.35rem 1.25rem 0.85rem;
+  margin: 0 -1.25rem 0.75rem;
+  background: linear-gradient(var(--paper) 85%, transparent);
+}
+
 .gift-chips {
   display: flex;
   gap: 0.5rem;
   overflow-x: auto;
-  padding: 0.25rem 1.25rem 0.75rem;
-  margin: 0 -1.25rem 1rem;
   scrollbar-width: none;
-  position: sticky;
-  top: 4.3rem;
-  z-index: 5;
-  background: linear-gradient(var(--paper) 80%, transparent);
+}
+
+.gift-ordem {
+  align-self: flex-start;
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--paper-alt);
+}
+
+.gift-ordem button {
+  padding: 0.35rem 0.8rem;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s, box-shadow 0.2s;
+}
+
+.gift-ordem button[aria-pressed="true"] {
+  background: var(--white);
+  color: var(--ink);
+  box-shadow: 0 1px 3px rgba(32, 29, 26, 0.12);
 }
 
 .gift-chips::-webkit-scrollbar {
@@ -135,7 +231,136 @@
   margin: 0 0 0.6rem 0.35rem;
 }
 
-/* ---- Lista (card arredondado com linhas) ---- */
+/* ---- Grade de presentes (cards de produto) ---- */
+.gift-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.gift-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.75rem 0.75rem 1rem;
+  background: var(--white);
+  border-radius: 18px;
+  text-align: center;
+  box-shadow: 0 1px 2px rgba(32, 29, 26, 0.04), 0 8px 24px rgba(32, 29, 26, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.25s ease;
+}
+
+.gift-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 1px 2px rgba(32, 29, 26, 0.04), 0 14px 32px rgba(32, 29, 26, 0.1);
+}
+
+.gift-card__foto {
+  position: relative;
+  width: 100%;
+  margin-bottom: 0.85rem;
+}
+
+.gift-card__selo {
+  position: absolute;
+  top: 0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  background: var(--status-temos);
+  color: var(--white);
+  font-size: 0.7rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.gift-card--completo .gift-thumb img,
+.gift-card--completo .gift-thumb__inicial {
+  opacity: 0.45;
+}
+
+.gift-card__nome {
+  flex: 1;
+  font-size: 0.88rem;
+  line-height: 1.35;
+  color: var(--ink);
+}
+
+.gift-card__qtd {
+  color: var(--ink-faint);
+  font-size: 0.78rem;
+}
+
+.gift-card__preco {
+  margin: 0.5rem 0 0.85rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.gift-card__btn {
+  width: 100%;
+  max-width: 180px;
+  padding: 0.7rem 1rem;
+  border: none;
+  border-radius: 10px;
+  background: var(--accent);
+  color: var(--white);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.15s;
+}
+
+.gift-card__btn:hover {
+  background: var(--accent-dark);
+}
+
+.gift-card__btn:active {
+  transform: scale(0.97);
+}
+
+.gift-card__btn--done,
+.gift-card__btn--done:hover {
+  background: rgba(75, 122, 90, 0.12);
+  color: var(--status-temos);
+  cursor: default;
+}
+
+.gift-card--completo .gift-card__nome,
+.gift-card--completo .gift-card__preco {
+  color: var(--ink-faint);
+}
+
+@media (min-width: 640px) {
+  .gift-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+  }
+  .gift-card {
+    padding: 1rem 1rem 1.25rem;
+  }
+  .gift-card__nome {
+    font-size: 0.95rem;
+  }
+  .gift-card__preco {
+    font-size: 1.08rem;
+  }
+}
+
+@media (min-width: 960px) {
+  .gift-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* ---- Lista em linhas (painel dos noivos) ---- */
 .gift-list {
   list-style: none;
   margin: 0;
@@ -168,11 +393,6 @@
   opacity: 0.7;
 }
 
-.gift-row--completo .gift-row__nome,
-.gift-row--completo .gift-row__meta {
-  opacity: 0.55;
-}
-
 .gift-row__info {
   flex: 1;
   min-width: 0;
@@ -202,35 +422,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-.gift-row__cotas {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 0.35rem;
-  max-width: 180px;
-}
-
-.gift-row__cotas-bar {
-  flex: 1;
-  height: 4px;
-  border-radius: 4px;
-  background: var(--paper-alt);
-  overflow: hidden;
-}
-
-.gift-row__cotas-bar span {
-  display: block;
-  height: 100%;
-  border-radius: 4px;
-  background: var(--accent);
-}
-
-.gift-row__cotas-txt {
-  font-size: 0.68rem;
-  color: var(--ink-faint);
-  font-variant-numeric: tabular-nums;
-}
-
 /* ---- Miniatura ---- */
 .gift-thumb {
   flex-shrink: 0;
@@ -254,6 +445,28 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/* foto grande do card: fundo branco e "contain", como foto de produto de loja */
+.gift-thumb--lg {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  border-radius: 12px;
+  background: var(--white);
+}
+
+.gift-thumb--lg img {
+  object-fit: contain;
+}
+
+.gift-thumb--lg .gift-thumb__inicial {
+  font-size: 2.6rem;
+  opacity: 0.35;
+}
+
+.gift-thumb--lg:has(.gift-thumb__inicial) {
+  background: var(--paper-alt);
 }
 
 .gift-thumb__inicial {
@@ -286,13 +499,6 @@
 
 .gift-pill:active {
   transform: scale(0.96);
-}
-
-.gift-pill--done,
-.gift-pill--done:hover {
-  background: rgba(75, 122, 90, 0.12);
-  color: var(--status-temos);
-  cursor: default;
 }
 
 /* ---- Paleta ---- */
@@ -448,8 +654,7 @@
   min-width: 0;
 }
 
-.enxoval-modal__form label > span,
-.enxoval-modal__label {
+.enxoval-modal__form label > span {
   font-size: 0.72rem;
   font-weight: 600;
   color: var(--ink-soft);
@@ -559,35 +764,6 @@
   cursor: pointer;
 }
 
-/* segmented control único / cotas */
-.enxoval-modal__tipo {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px;
-  padding: 4px;
-  border-radius: 14px;
-  background: var(--paper-alt);
-}
-
-.enxoval-modal__tipo button {
-  padding: 0.55rem 0.5rem;
-  border: none;
-  border-radius: 10px;
-  background: transparent;
-  font: inherit;
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--ink-soft);
-  cursor: pointer;
-  transition: background-color 0.2s, color 0.2s, box-shadow 0.2s;
-}
-
-.enxoval-modal__tipo button[aria-pressed="true"] {
-  background: var(--white);
-  color: var(--ink);
-  box-shadow: 0 1px 3px rgba(32, 29, 26, 0.12);
-}
-
 .enxoval-modal__preview-linha {
   display: flex;
   align-items: center;
@@ -667,12 +843,6 @@
   cursor: not-allowed;
 }
 
-.enxoval-modal__hint {
-  margin: -0.45rem 0 0;
-  font-size: 0.76rem;
-  color: var(--ink-soft);
-}
-
 .enxoval-modal__error {
   color: var(--status-precisamos);
   background: rgba(161, 73, 62, 0.08);
@@ -693,9 +863,9 @@
   .enxoval {
     padding: 5.5rem 1rem 4rem;
   }
-  .gift-chips {
-    padding: 0.25rem 1rem 0.75rem;
-    margin: 0 -1rem 1rem;
+  .gift-toolbar {
+    padding: 0.35rem 1rem 0.85rem;
+    margin: 0 -1rem 0.75rem;
   }
   .gift-row {
     padding: 0.75rem 0.85rem;

@@ -37,7 +37,6 @@ export type EnxovalItem = {
   quantidade: number;
   prioridade: EnxovalPrioridade;
   preco_estimado: number | null;
-  cotas: number | null;
   link: string | null;
   imagem_url: string | null;
   observacoes: string | null;

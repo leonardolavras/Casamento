@@ -3,7 +3,7 @@ import { useEnxovalItems } from "../../hooks/useEnxovalItems";
 import { useEnxovalPresentes } from "../../hooks/useEnxovalPresentes";
 import { ENXOVAL_CATEGORIAS, type EnxovalCategoria, type EnxovalItem } from "../../types/enxoval";
 import { PALETA_CORES, PIX_KEY } from "../../config/site";
-import { agruparContribuicoes, resumirPresente, rotuloPreco, type ResumoPresente } from "../../lib/presente";
+import { agruparContribuicoes, NOME_VALOR_LIVRE, presenteCompleto, rotuloPreco } from "../../lib/presente";
 import { PixModal } from "../common/PixModal";
 import { GiftThumb } from "./GiftThumb";
 import "./Enxoval.css";
@@ -11,35 +11,34 @@ import "./Enxoval.css";
 /** Página pública da lista de presentes: somente leitura para convidados.
  * Gerenciamento (itens, "já temos", valores arrecadados) fica em /noivos. */
 
-type Linha = { item: EnxovalItem; resumo: ResumoPresente };
+type Linha = { item: EnxovalItem; completo: boolean };
+type Ordem = "categoria" | "valor";
 
-function GiftRow({ item, resumo, onPresentear }: Linha & { onPresentear: (item: EnxovalItem) => void }) {
+// Completos sempre no fim: quem chega vê primeiro o que ainda dá pra presentear.
+function porValor(a: Linha, b: Linha): number {
+  if (a.completo !== b.completo) return Number(a.completo) - Number(b.completo);
+  return (a.item.preco_estimado ?? Infinity) - (b.item.preco_estimado ?? Infinity);
+}
+
+function GiftCard({ item, completo, onPresentear }: Linha & { onPresentear: (item: EnxovalItem) => void }) {
   const podePresentear = Boolean(PIX_KEY || item.link);
-  const pct = resumo.dividido ? (resumo.cotasPreenchidas / resumo.totalCotas) * 100 : 0;
 
   return (
-    <li className={`gift-row ${resumo.completo ? "gift-row--completo" : ""}`}>
-      <GiftThumb nome={item.nome} src={item.imagem_url} />
-
-      <div className="gift-row__info">
-        <p className="gift-row__nome">
-          {item.nome}
-          {item.quantidade > 1 && <span className="gift-row__qtd">{item.quantidade} un.</span>}
-        </p>
-        <p className="gift-row__meta">{rotuloPreco(resumo)}</p>
-        {resumo.dividido && resumo.cotasPreenchidas > 0 && !resumo.completo && (
-          <div className="gift-row__cotas" aria-label={`${resumo.cotasPreenchidas} de ${resumo.totalCotas} cotas presenteadas`}>
-            <span className="gift-row__cotas-bar"><span style={{ width: `${pct}%` }} /></span>
-            <span className="gift-row__cotas-txt">{resumo.cotasPreenchidas}/{resumo.totalCotas}</span>
-          </div>
-        )}
+    <li className={`gift-card ${completo ? "gift-card--completo" : ""}`}>
+      <div className="gift-card__foto">
+        <GiftThumb nome={item.nome} src={item.imagem_url} size="lg" />
+        {completo && <span className="gift-card__selo">Presenteado</span>}
       </div>
-
-      {resumo.completo ? (
-        <span className="gift-pill gift-pill--done">Presenteado</span>
+      <p className="gift-card__nome">
+        {item.nome}
+        {item.quantidade > 1 && <span className="gift-card__qtd"> · {item.quantidade} un.</span>}
+      </p>
+      <p className="gift-card__preco">{rotuloPreco(item)}</p>
+      {completo ? (
+        <span className="gift-card__btn gift-card__btn--done">Já presenteado</span>
       ) : (
         podePresentear && (
-          <button type="button" className="gift-pill" onClick={() => onPresentear(item)}>
+          <button type="button" className="gift-card__btn" onClick={() => onPresentear(item)}>
             Presentear
           </button>
         )
@@ -51,34 +50,43 @@ function GiftRow({ item, resumo, onPresentear }: Linha & { onPresentear: (item: 
 export function EnxovalChecklist() {
   const { items, loading, error } = useEnxovalItems();
   const { presentes, registrar } = useEnxovalPresentes();
-  const [presenteando, setPresenteando] = useState<Linha | null>(null);
+  // null = fechado; item = presente escolhido; "livre" = convidado escolhe o valor
+  const [presenteando, setPresenteando] = useState<EnxovalItem | "livre" | null>(null);
   const [categoriaAtiva, setCategoriaAtiva] = useState<EnxovalCategoria | "todas">("todas");
+  const [ordem, setOrdem] = useState<Ordem>("categoria");
 
   const contribuicoes = useMemo(() => agruparContribuicoes(presentes), [presentes]);
 
-  // Completos vão pro fim de cada categoria: quem chega vê primeiro o que ainda falta.
-  const linhasPorCategoria = useMemo(() => {
-    const map = new Map<EnxovalCategoria, Linha[]>();
-    for (const item of items) {
-      if (item.status === "temos") continue;
-      const linha = { item, resumo: resumirPresente(item, contribuicoes.get(item.id)) };
-      const lista = map.get(item.categoria) ?? [];
-      lista.push(linha);
-      map.set(item.categoria, lista);
-    }
-    for (const lista of map.values()) {
-      lista.sort((a, b) => Number(a.resumo.completo) - Number(b.resumo.completo));
-    }
-    return map;
-  }, [items, contribuicoes]);
+  const linhas = useMemo(
+    () =>
+      items
+        .filter((item) => item.status !== "temos")
+        .map((item) => ({ item, completo: presenteCompleto(item, contribuicoes.get(item.id)) })),
+    [items, contribuicoes],
+  );
 
-  const categorias = ENXOVAL_CATEGORIAS.filter((cat) => linhasPorCategoria.has(cat));
-  const visiveis = categoriaAtiva === "todas" ? categorias : categorias.filter((c) => c === categoriaAtiva);
-  const totalItens = categorias.reduce((n, c) => n + (linhasPorCategoria.get(c)?.length ?? 0), 0);
+  const contagemPorCategoria = useMemo(() => {
+    const map = new Map<EnxovalCategoria, number>();
+    for (const { item } of linhas) map.set(item.categoria, (map.get(item.categoria) ?? 0) + 1);
+    return map;
+  }, [linhas]);
+
+  const categorias = ENXOVAL_CATEGORIAS.filter((cat) => contagemPorCategoria.has(cat));
+  const filtradas = categoriaAtiva === "todas" ? linhas : linhas.filter((l) => l.item.categoria === categoriaAtiva);
+
+  const grupos: { titulo: string | null; linhas: Linha[] }[] =
+    ordem === "valor"
+      ? [{ titulo: null, linhas: [...filtradas].sort(porValor) }]
+      : categorias
+          .filter((cat) => categoriaAtiva === "todas" || cat === categoriaAtiva)
+          .map((cat) => ({
+            titulo: cat,
+            linhas: filtradas.filter((l) => l.item.categoria === cat).sort((a, b) => Number(a.completo) - Number(b.completo)),
+          }));
 
   function handlePresentear(item: EnxovalItem) {
     if (PIX_KEY) {
-      setPresenteando({ item, resumo: resumirPresente(item, contribuicoes.get(item.id)) });
+      setPresenteando(item);
     } else if (item.link) {
       window.open(item.link, "_blank", "noopener,noreferrer");
     }
@@ -86,9 +94,10 @@ export function EnxovalChecklist() {
 
   async function handleConfirm(nomeDoador: string, valor: number) {
     if (!presenteando) return;
+    const livre = presenteando === "livre";
     await registrar({
-      item_id: presenteando.item.id,
-      item_nome: presenteando.item.nome,
+      item_id: livre ? null : presenteando.id,
+      item_nome: livre ? NOME_VALOR_LIVRE : presenteando.nome,
       valor,
       nome_doador: nomeDoador,
       mensagem: null,
@@ -100,43 +109,67 @@ export function EnxovalChecklist() {
       <header className="enxoval__header">
         <span className="enxoval__eyebrow">Nosso primeiro lar</span>
         <h1>Lista de Presentes</h1>
-        <p>Escolha um presente e contribua pelo Pix. Presentes mais caros são divididos em cotas — você presenteia uma parte.</p>
+        <p>
+          Escolha o presente pelo valor que você quer dar e pague pelo Pix. Não achou o valor ideal? Você
+          pode escolher qualquer valor.
+        </p>
       </header>
 
       {error && <p className="enxoval__erro">Erro: {error}</p>}
 
+      {PIX_KEY && (
+        <button type="button" className="gift-livre" onClick={() => setPresenteando("livre")}>
+          <span className="gift-livre__icone" aria-hidden="true">R$</span>
+          <span className="gift-livre__texto">
+            <strong>Escolher um valor</strong>
+            <span>Presenteie com o valor que quiser</span>
+          </span>
+          <span className="gift-pill" aria-hidden="true">Escolher</span>
+        </button>
+      )}
+
       {loading ? (
         <p className="enxoval__loading">Carregando...</p>
-      ) : totalItens === 0 ? (
+      ) : linhas.length === 0 ? (
         <p className="enxoval-section__vazio">Nenhum presente por aqui ainda.</p>
       ) : (
         <>
-          <nav className="gift-chips" aria-label="Filtrar por categoria">
-            <button
-              type="button"
-              className={`gift-chip ${categoriaAtiva === "todas" ? "gift-chip--ativo" : ""}`}
-              onClick={() => setCategoriaAtiva("todas")}
-            >
-              Todos <span>{totalItens}</span>
-            </button>
-            {categorias.map((cat) => (
+          <div className="gift-toolbar">
+            <nav className="gift-chips" aria-label="Filtrar por categoria">
               <button
-                key={cat}
                 type="button"
-                className={`gift-chip ${categoriaAtiva === cat ? "gift-chip--ativo" : ""}`}
-                onClick={() => setCategoriaAtiva(cat)}
+                className={`gift-chip ${categoriaAtiva === "todas" ? "gift-chip--ativo" : ""}`}
+                onClick={() => setCategoriaAtiva("todas")}
               >
-                {cat} <span>{linhasPorCategoria.get(cat)?.length}</span>
+                Todos <span>{linhas.length}</span>
               </button>
-            ))}
-          </nav>
+              {categorias.map((cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  className={`gift-chip ${categoriaAtiva === cat ? "gift-chip--ativo" : ""}`}
+                  onClick={() => setCategoriaAtiva(cat)}
+                >
+                  {cat} <span>{contagemPorCategoria.get(cat)}</span>
+                </button>
+              ))}
+            </nav>
+            <div className="gift-ordem" role="group" aria-label="Ordenar">
+              <button type="button" aria-pressed={ordem === "categoria"} onClick={() => setOrdem("categoria")}>
+                Por categoria
+              </button>
+              <button type="button" aria-pressed={ordem === "valor"} onClick={() => setOrdem("valor")}>
+                Por valor
+              </button>
+            </div>
+          </div>
 
-          {visiveis.map((cat) => (
-            <div key={cat} className="gift-section">
-              <h2 className="gift-section__titulo">{cat}</h2>
-              <ul className="gift-list">
-                {linhasPorCategoria.get(cat)!.map((linha) => (
-                  <GiftRow key={linha.item.id} {...linha} onPresentear={handlePresentear} />
+          {grupos.map((grupo) => (
+            <div key={grupo.titulo ?? "valor"} className="gift-section">
+              {grupo.titulo && <h2 className="gift-section__titulo">{grupo.titulo}</h2>}
+              <ul className="gift-grid">
+                {grupo.linhas.map((linha) => (
+                  <GiftCard key={linha.item.id} {...linha} onPresentear={handlePresentear} />
                 ))}
               </ul>
             </div>
@@ -167,12 +200,8 @@ export function EnxovalChecklist() {
 
       {presenteando && (
         <PixModal
-          itemNome={
-            presenteando.resumo.dividido
-              ? `${presenteando.item.nome} (1 cota)`
-              : presenteando.item.nome
-          }
-          valorSugerido={presenteando.resumo.valorPresente}
+          itemNome={presenteando === "livre" ? NOME_VALOR_LIVRE : presenteando.nome}
+          valorSugerido={presenteando === "livre" ? null : presenteando.preco_estimado}
           onClose={() => setPresenteando(null)}
           onConfirm={handleConfirm}
         />

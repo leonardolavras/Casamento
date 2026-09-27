@@ -1,23 +1,12 @@
 -- ============================================================
 -- SCRIPT ÚNICO: roda tudo que falta de uma vez só (preços +
--- itens grandes + decoração + coluna de cotas).
+-- itens grandes + lua de mel + decoração + ajustes).
 -- Cole este arquivo INTEIRO em uma aba NOVA e limpa do SQL Editor
 -- do Supabase (Ctrl+A, apagar o que tiver lá, colar isso, Run).
 -- Seguro rodar mais de uma vez: usa nome como chave / IF NOT EXISTS.
 -- ============================================================
 
--- ---- 1) coluna de cotas (presente dividido em partes) ----
--- Adiciona suporte a "cotas": presentes caros (ex: lua de mel, móveis grandes)
--- podem ser divididos em N cotas, e cada convidado presenteia uma cota por vez
--- em vez do valor cheio. Rode no SQL Editor do Supabase.
---
--- cotas = null ou 1 -> presente "único" (comportamento atual, sem mudança)
--- cotas > 1 -> valor de cada cota = preco_estimado / cotas
-
-alter table public.enxoval_itens
-  add column if not exists cotas integer;
-
--- ---- 2) preços dos 68 itens base do enxoval ----
+-- ---- 1) preços dos 68 itens base do enxoval ----
 -- Atualização de preço estimado e foto para os itens de public.enxoval_itens
 -- Gerado a partir de pesquisa de preços médios de mercado (BRL) em lojas como
 -- Mercado Livre, Amazon.com.br, Magazine Luiza e Casas Bahia (setembro/2026).
@@ -123,7 +112,7 @@ UPDATE public.enxoval_itens SET preco_estimado = 9.90 WHERE nome = 'Cola instant
 UPDATE public.enxoval_itens SET preco_estimado = 14.90 WHERE nome = 'Lâmpada extra';
 UPDATE public.enxoval_itens SET preco_estimado = 19.90 WHERE nome = 'Pilhas';
 
--- ---- 3) itens grandes (móveis e eletro essenciais) ----
+-- ---- 2) itens grandes (móveis e eletro essenciais) ----
 -- Itens "principais" de primeira casa (móveis e eletrodomésticos essenciais)
 -- Rode no SQL Editor do Supabase DEPOIS de schema.sql e dos seeds anteriores.
 -- Pode rodar mais de uma vez sem duplicar (usa nome como chave, on conflict do nothing).
@@ -166,7 +155,7 @@ values
   ('Kit primeiros socorros', 'Farmacinha', 'precisamos', 1, 'alta', 89.90, null)
 on conflict (nome) do nothing;
 
--- ---- 4) itens de lua de mel ----
+-- ---- 3) itens de lua de mel ----
 -- Itens "experiência" pra lua de mel — não são produto físico, então o
 -- valor é uma meta redonda plausível, não preço de mercado pesquisado.
 -- Rode DEPOIS de schema.sql (que já cria a coluna categoria como texto
@@ -180,7 +169,7 @@ values
   ('Passeio na lua de mel', 'Lua de Mel', 'precisamos', 1, 'media', 250.00)
 on conflict (nome) do nothing;
 
--- ---- 5) itens de decoração e complementares ----
+-- ---- 4) itens de decoração e complementares ----
 -- Itens de decoração e complementares de primeira casa
 -- Rode no SQL Editor do Supabase DEPOIS de schema.sql e dos seeds anteriores.
 -- Pode rodar mais de uma vez sem duplicar (usa nome como chave, on conflict do nothing).
@@ -228,14 +217,21 @@ values
   ('Capacho para porta', 'Decoração', 'precisamos', 1, 'baixa', 49.90, null)
 on conflict (nome) do nothing;
 
--- ---- 6) remove o status "queremos" ----
--- Remove o status "queremos": a lista passa a ter só "precisamos" e "temos".
--- Itens que estavam como "queremos" ainda não foram ganhos, então viram
--- "precisamos" (continuam aparecendo na lista de presentes).
--- Rode no SQL Editor do Supabase, numa aba limpa. Seguro rodar mais de uma vez.
 
+-- ---- 5) ajustes: remove "queremos" e a coluna de cotas ----
+-- Ajustes da lista de presentes. Rode no SQL Editor do Supabase, numa aba
+-- nova e vazia. Seguro rodar mais de uma vez.
+
+-- 1) Status "queremos" não existe mais: a lista tem só "precisamos" e "temos".
+--    Itens que estavam como "queremos" ainda não foram ganhos, então viram
+--    "precisamos" e continuam aparecendo pros convidados.
 update public.enxoval_itens set status = 'precisamos' where status = 'queremos';
 
 alter table public.enxoval_itens drop constraint if exists enxoval_itens_status_check;
 alter table public.enxoval_itens
   add constraint enxoval_itens_status_check check (status in ('temos', 'precisamos'));
+
+-- 2) Presentes não são divididos em cotas: cada um tem o valor cheio e o
+--    convidado escolhe pelo valor (ou escolhe um valor livre). Remove a
+--    coluna, caso o add-cotas.sql de uma versão anterior tenha sido rodado.
+alter table public.enxoval_itens drop column if exists cotas;

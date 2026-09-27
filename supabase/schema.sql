@@ -11,7 +11,6 @@ create table if not exists public.enxoval_itens (
   prioridade text not null default 'media'
     check (prioridade in ('baixa', 'media', 'alta')),
   preco_estimado numeric(10, 2),
-  cotas integer,
   link text,
   imagem_url text,
   observacoes text,
@@ -23,11 +22,6 @@ create table if not exists public.enxoval_itens (
 -- que as colunas mais novas também sejam criadas.
 alter table public.enxoval_itens
   add column if not exists imagem_url text;
-
--- cotas: divide um presente caro em N partes, cada convidado presenteia uma
--- cota (preco_estimado / cotas) em vez do valor cheio. null/1 = presente único.
-alter table public.enxoval_itens
-  add column if not exists cotas integer;
 
 -- Mantém updated_at sempre atualizado
 create or replace function public.set_updated_at()

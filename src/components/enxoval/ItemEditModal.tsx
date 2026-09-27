@@ -10,7 +10,7 @@ import {
   type EnxovalStatus,
 } from "../../types/enxoval";
 import { uploadEnxovalFoto } from "../../lib/uploadEnxovalFoto";
-import { formatBRL, resumirPresente, rotuloPreco } from "../../lib/presente";
+import { rotuloPreco } from "../../lib/presente";
 import { GiftThumb } from "./GiftThumb";
 import "./Enxoval.css";
 
@@ -41,8 +41,6 @@ export function ItemEditModal({ item, title = "Editar presente", onSave, onClose
   const [quantidade, setQuantidade] = useState(item?.quantidade ?? 1);
   const [prioridade, setPrioridade] = useState<EnxovalPrioridade>(item?.prioridade ?? "media");
   const [preco, setPreco] = useState(formatPrecoInput(item?.preco_estimado));
-  const [emCotas, setEmCotas] = useState((item?.cotas ?? 1) > 1);
-  const [cotas, setCotas] = useState(String(item?.cotas && item.cotas > 1 ? item.cotas : 10));
   const [link, setLink] = useState(item?.link ?? "");
   const [imagemUrl, setImagemUrl] = useState(item?.imagem_url ?? "");
   const [observacoes, setObservacoes] = useState(item?.observacoes ?? "");
@@ -53,12 +51,6 @@ export function ItemEditModal({ item, title = "Editar presente", onSave, onClose
 
   const isNew = !item;
   const precoNum = parsePreco(preco);
-  const cotasNum = Math.max(2, parseInt(cotas, 10) || 2);
-
-  const previa = resumirPresente(
-    { preco_estimado: precoNum, cotas: emCotas ? cotasNum : null } as EnxovalItem,
-    undefined,
-  );
 
   async function handleFoto(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -87,7 +79,6 @@ export function ItemEditModal({ item, title = "Editar presente", onSave, onClose
         quantidade,
         prioridade,
         preco_estimado: precoNum,
-        cotas: emCotas ? cotasNum : null,
         link: link.trim() || null,
         imagem_url: imagemUrl.trim() || null,
         observacoes: observacoes.trim() || null,
@@ -145,7 +136,7 @@ export function ItemEditModal({ item, title = "Editar presente", onSave, onClose
           )}
 
           <label>
-            <span>Valor total (R$)</span>
+            <span>Valor do presente (R$)</span>
             <input
               type="text"
               inputMode="decimal"
@@ -155,37 +146,11 @@ export function ItemEditModal({ item, title = "Editar presente", onSave, onClose
             />
           </label>
 
-          <div>
-            <span className="enxoval-modal__label">Como os convidados presenteiam</span>
-            <div className="enxoval-modal__tipo" role="group" style={{ marginTop: "0.3rem" }}>
-              <button type="button" aria-pressed={!emCotas} onClick={() => setEmCotas(false)}>
-                Presente único
-              </button>
-              <button type="button" aria-pressed={emCotas} onClick={() => setEmCotas(true)}>
-                Dividir em cotas
-              </button>
-            </div>
-          </div>
-
-          {emCotas && (
-            <>
-              <label>
-                <span>Número de cotas</span>
-                <input type="number" min={2} max={200} value={cotas} onChange={(e) => setCotas(e.target.value)} />
-              </label>
-              <p className="enxoval-modal__hint">
-                {previa.valorPresente != null
-                  ? `Cada convidado presenteia 1 cota de ${formatBRL(previa.valorPresente)}.`
-                  : "Defina o valor total para calcular a cota."}
-              </p>
-            </>
-          )}
-
           <div className="enxoval-modal__preview-linha" aria-label="Prévia na lista">
             <GiftThumb nome={nome || "?"} src={imagemUrl || null} />
             <div>
               <p className="enxoval-modal__preview-nome">{nome || "Nome do presente"}</p>
-              <p className="enxoval-modal__preview-meta">{rotuloPreco(previa)}</p>
+              <p className="enxoval-modal__preview-meta">{rotuloPreco({ preco_estimado: precoNum })}</p>
             </div>
           </div>
 

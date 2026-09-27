@@ -9,7 +9,7 @@ import {
   type EnxovalStatus,
 } from "../types/enxoval";
 import { COUPLE } from "../config/site";
-import { agruparContribuicoes, formatBRL, resumirPresente, rotuloPreco } from "../lib/presente";
+import { agruparContribuicoes, formatBRL, presenteCompleto, rotuloPreco } from "../lib/presente";
 import { ItemEditModal } from "../components/enxoval/ItemEditModal";
 import { GiftThumb } from "../components/enxoval/GiftThumb";
 import "../components/enxoval/Enxoval.css";
@@ -79,6 +79,14 @@ function AdminPanel() {
 
   const itemsPorId = useMemo(() => new Map(items.map((i) => [i.id, i])), [items]);
   const contribuicoes = useMemo(() => agruparContribuicoes(presentes), [presentes]);
+  const doadoresPorItem = useMemo(() => {
+    const map = new Map<string, string[]>();
+    for (const p of presentes) {
+      if (!p.item_id) continue;
+      map.set(p.item_id, [...(map.get(p.item_id) ?? []), p.nome_doador.split(" ")[0]]);
+    }
+    return map;
+  }, [presentes]);
   const totalArrecadado = useMemo(() => presentes.reduce((sum, p) => sum + p.valor, 0), [presentes]);
 
   const { totalMeta, itensCompletos } = useMemo(() => {
@@ -87,7 +95,7 @@ function AdminPanel() {
     for (const item of items) {
       if (item.status === "temos") continue;
       if (item.preco_estimado) meta += item.preco_estimado;
-      if (resumirPresente(item, contribuicoes.get(item.id)).completo) completos += 1;
+      if (presenteCompleto(item, contribuicoes.get(item.id))) completos += 1;
     }
     return { totalMeta: meta, itensCompletos: completos };
   }, [items, contribuicoes]);
@@ -185,7 +193,7 @@ function AdminPanel() {
               onChange={(e) => setSearch(e.target.value)}
               className="noivos-toolbar__search"
             />
-            <div className="gift-chips gift-chips--estatico">
+            <div className="gift-chips">
               <button
                 type="button"
                 className={`gift-chip ${filter === "todos" ? "gift-chip--ativo" : ""}`}
@@ -221,7 +229,9 @@ function AdminPanel() {
                 <li className="gift-row gift-row--vazio">Nenhum presente encontrado</li>
               ) : (
                 filtered.map((item) => {
-                  const resumo = resumirPresente(item, contribuicoes.get(item.id));
+                  const c = contribuicoes.get(item.id);
+                  const completo = presenteCompleto(item, c);
+                  const doadores = doadoresPorItem.get(item.id);
                   return (
                     <li key={item.id} className="gift-row gift-row--admin">
                       <button
@@ -237,15 +247,12 @@ function AdminPanel() {
                             {item.quantidade > 1 && <span className="gift-row__qtd">{item.quantidade} un.</span>}
                           </span>
                           <span className="gift-row__meta">
-                            {rotuloPreco(resumo)} · {item.categoria}
+                            {rotuloPreco(item)} · {item.categoria}
                           </span>
-                          {resumo.dividido && resumo.cotasPreenchidas > 0 && (
+                          {c && doadores && (
                             <span className="gift-row__meta gift-row__meta--destaque">
-                              {resumo.cotasPreenchidas}/{resumo.totalCotas} cotas presenteadas
+                              {completo ? "Presenteado" : `${formatBRL(c.total)} recebidos`} por {doadores.join(", ")}
                             </span>
-                          )}
-                          {!resumo.dividido && resumo.completo && (
-                            <span className="gift-row__meta gift-row__meta--destaque">Presenteado</span>
                           )}
                         </span>
                       </button>

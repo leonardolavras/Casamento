@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { Navbar } from "./components/Navbar";
 import { Home } from "./pages/Home";
 import { EnxovalPage } from "./pages/EnxovalPage";
@@ -31,7 +31,8 @@ function App() {
         <Route path="/galeria" element={<GaleriaPage />} />
         <Route path="/mural" element={<MuralPage />} />
         <Route path="/historia" element={<HistoriaPage />} />
-        <Route path="/enxoval" element={<EnxovalPage />} />
+        <Route path="/presentes" element={<EnxovalPage />} />
+        <Route path="/enxoval" element={<Navigate to="/presentes" replace />} />
         <Route path="/noivos" element={<NoivosPage />} />
       </Routes>
     </BrowserRouter>
