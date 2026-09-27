@@ -302,8 +302,10 @@ button {
 }
 
 /* Page transition */
+/* "backwards" e não "both": um transform que fica aplicado depois da animação
+   vira containing block de position:fixed e prende modais/lightbox na página. */
 .page-transition {
-  animation: page-enter 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: page-enter 0.5s cubic-bezier(0.16, 1, 0.3, 1) backwards;
 }
 
 @keyframes page-enter {

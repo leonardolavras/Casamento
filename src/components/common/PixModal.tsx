@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import QRCode from "qrcode";
 import { PIX_KEY, PIX_TITULAR, PIX_CIDADE } from "../../config/site";
 import { buildPixPayload } from "../../lib/pix";
+import { useTravarRolagem } from "../../hooks/useTravarRolagem";
 import "./PixModal.css";
 
 interface PixModalProps {
@@ -16,6 +18,7 @@ function formatBRL(valor: number): string {
 }
 
 export function PixModal({ itemNome, valorSugerido, onClose, onConfirm }: PixModalProps) {
+  useTravarRolagem();
   const valorFixo = valorSugerido != null && valorSugerido > 0;
   const [valor, setValor] = useState(valorSugerido ? valorSugerido.toFixed(2) : "");
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
@@ -79,7 +82,7 @@ export function PixModal({ itemNome, valorSugerido, onClose, onConfirm }: PixMod
   if (!PIX_KEY) return null;
 
   if (confirmado) {
-    return (
+    return createPortal(
       <div className="pix-modal-overlay" onClick={onClose}>
         <div className="pix-modal pix-modal--sucesso" onClick={(e) => e.stopPropagation()}>
           <span className="pix-modal__check">✓</span>
@@ -87,11 +90,12 @@ export function PixModal({ itemNome, valorSugerido, onClose, onConfirm }: PixMod
           <p>Seu carinho com "{itemNome}" significa muito pra gente.</p>
           <button type="button" className="pix-modal__copy" onClick={onClose}>Fechar</button>
         </div>
-      </div>
+      </div>,
+      document.body,
     );
   }
 
-  return (
+  return createPortal(
     <div className="pix-modal-overlay" onClick={onClose}>
       <div className="pix-modal" onClick={(e) => e.stopPropagation()}>
         <div className="pix-modal__header">
@@ -157,6 +161,7 @@ export function PixModal({ itemNome, valorSugerido, onClose, onConfirm }: PixMod
           {erro && <span className="pix-modal__confirm-erro">{erro}</span>}
         </form>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

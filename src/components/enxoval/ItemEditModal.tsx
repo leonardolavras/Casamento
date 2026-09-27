@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import {
   ENXOVAL_CATEGORIAS,
   ENXOVAL_STATUS,
@@ -13,6 +14,7 @@ import { uploadEnxovalFoto } from "../../lib/uploadEnxovalFoto";
 import { baixarFotoDoLink, pareceLink } from "../../lib/fotoDoLink";
 import { rotuloPreco } from "../../lib/presente";
 import { GiftThumb } from "./GiftThumb";
+import { useTravarRolagem } from "../../hooks/useTravarRolagem";
 import "./Enxoval.css";
 
 interface ItemEditModalProps {
@@ -36,6 +38,7 @@ function formatPrecoInput(valor: number | null | undefined): string {
 }
 
 export function ItemEditModal({ item, title = "Editar presente", onSave, onClose }: ItemEditModalProps) {
+  useTravarRolagem();
   const [nome, setNome] = useState(item?.nome ?? "");
   const [categoria, setCategoria] = useState<EnxovalCategoria>(item?.categoria ?? "Cozinha");
   const [status, setStatus] = useState<EnxovalStatus>(item?.status ?? "precisamos");
@@ -108,7 +111,7 @@ export function ItemEditModal({ item, title = "Editar presente", onSave, onClose
     setSaving(false);
   }
 
-  return (
+  return createPortal(
     <div className="enxoval-modal-overlay" onClick={onClose}>
       <div className="enxoval-modal" role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()}>
         <div className="enxoval-modal__header">
@@ -254,6 +257,7 @@ export function ItemEditModal({ item, title = "Editar presente", onSave, onClose
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

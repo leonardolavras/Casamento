@@ -288,3 +288,88 @@
 .pix-modal--sucesso .pix-modal__copy {
   align-self: stretch;
 }
+
+/* ---- Visual novo + cabe inteiro na tela do celular sem rolar ---- */
+.pix-modal {
+  background: var(--white);
+  border: none;
+  border-radius: 24px;
+  max-height: calc(100dvh - 2rem);
+  padding: 1.25rem 1.25rem 1.35rem;
+  gap: 0.85rem;
+  box-shadow: var(--shadow-lg);
+}
+
+.pix-modal-overlay {
+  background: rgba(32, 29, 26, 0.55);
+}
+
+.pix-modal__close {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--paper-alt);
+  font-size: 1.2rem;
+  padding: 0;
+}
+
+.pix-modal__item {
+  margin: -0.35rem 0 0;
+}
+
+.pix-modal__valor-fixo,
+.pix-modal__valor-input,
+.pix-modal__confirm-row input {
+  border-radius: 12px;
+}
+
+.pix-modal__valor-fixo {
+  border: none;
+  padding: 0.7rem 1rem;
+}
+
+.pix-modal__qr {
+  padding: 0.75rem;
+  border-radius: 16px;
+}
+
+.pix-modal__qr img {
+  max-width: 200px;
+}
+
+.pix-modal__qr-placeholder {
+  width: 200px;
+}
+
+.pix-modal__copy,
+.pix-modal__confirm-row button {
+  border-radius: 999px;
+}
+
+.pix-modal__confirm {
+  padding-top: 0.75rem;
+}
+
+@media (max-height: 760px) {
+  .pix-modal {
+    gap: 0.65rem;
+    padding: 1rem 1rem 1.1rem;
+  }
+  .pix-modal__qr {
+    padding: 0.5rem;
+  }
+  .pix-modal__qr img,
+  .pix-modal__qr-placeholder {
+    max-width: 150px;
+    width: 150px;
+  }
+  .pix-modal__hint {
+    font-size: 0.72rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .pix-modal-overlay {
+    padding: 0.75rem;
+  }
+}
