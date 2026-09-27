@@ -119,145 +119,47 @@
   color: var(--ink-faint);
 }
 
-/* ---- Progress ---- */
-.enxoval-progress {
+/* ---- Estatística principal: valor arrecadado ---- */
+.enxoval-hero-stat {
   max-width: 640px;
-  margin: 0 auto 2rem;
+  margin: 0 auto 2.5rem;
+  background: var(--ink);
+  padding: 1.5rem 1.75rem;
 }
 
-.enxoval-progress__bar {
+.enxoval-hero-stat__bar {
   height: 8px;
-  background: var(--line);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 4px;
   overflow: hidden;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
 }
 
-.enxoval-progress__fill {
+.enxoval-hero-stat__fill {
   height: 100%;
-  background: var(--status-temos);
+  background: var(--accent);
   border-radius: 4px;
-  transition: width 0.5s ease;
+  transition: width 0.6s ease;
 }
 
-.enxoval-progress__info {
+.enxoval-hero-stat__info {
   display: flex;
-  justify-content: space-between;
   align-items: baseline;
-}
-
-.enxoval-progress__pct {
-  font-family: var(--font-serif);
-  font-size: 1.4rem;
-  font-weight: 500;
-  color: var(--ink);
-}
-
-.enxoval-progress__label {
-  font-size: 0.8rem;
-  color: var(--ink-soft);
-}
-
-/* ---- Cards resumo ---- */
-.enxoval-cards {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.75rem;
-  max-width: 640px;
-  margin: 0 auto 2rem;
-}
-
-.enxoval-cards--2 {
-  grid-template-columns: repeat(2, 1fr);
-}
-
-.enxoval-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 1.25rem 0.75rem 1rem;
-  border: 1px solid var(--line);
-  background: var(--white);
-  font-family: inherit;
-  cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.2s;
-}
-
-.enxoval-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
-}
-
-.enxoval-card strong {
-  font-family: var(--font-serif);
-  font-size: 2rem;
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
-}
-
-.enxoval-card span {
-  font-size: 0.68rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-}
-
-.enxoval-card--temos {
-  border-bottom: 3px solid var(--status-temos);
-}
-.enxoval-card--temos strong {
-  color: var(--status-temos);
-}
-.enxoval-card--temos span {
-  color: var(--status-temos);
-}
-
-.enxoval-card--precisamos {
-  border-bottom: 3px solid var(--status-precisamos);
-}
-.enxoval-card--precisamos strong {
-  color: var(--status-precisamos);
-}
-.enxoval-card--precisamos span {
-  color: var(--status-precisamos);
-}
-
-/* ---- Seções de status (sempre visíveis) ---- */
-.enxoval-section {
-  max-width: 640px;
-  margin: 0 auto 1.5rem;
-  background: var(--white);
-  border: 1px solid var(--line);
-  scroll-margin-top: 5rem;
-}
-
-.enxoval-section__header {
-  display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+  gap: 0.4rem;
 }
 
-.enxoval-section__header h3 {
-  font-size: 0.95rem;
-  font-weight: 600;
-  margin: 0;
-}
-
-.enxoval-section__header--temos h3 {
-  color: var(--status-temos);
-}
-.enxoval-section__header--precisamos h3 {
-  color: var(--status-precisamos);
-}
-
-.enxoval-section__count {
+.enxoval-hero-stat__valor {
   font-family: var(--font-serif);
-  font-size: 1.1rem;
-  font-variant-numeric: tabular-nums;
-  color: var(--ink-soft);
+  font-size: 1.6rem;
+  font-weight: 500;
+  color: var(--paper);
+}
+
+.enxoval-hero-stat__label {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.65);
 }
 
 .enxoval-section__vazio {
@@ -271,37 +173,27 @@
 }
 
 /* ---- Gift cards (o que precisamos) ---- */
-.enxoval-section--presentes {
-  max-width: none;
-  background: transparent;
-  border: none;
-}
-
-.enxoval-section--presentes > .enxoval-section__header {
-  background: var(--white);
-  border: 1px solid var(--line);
-  border-bottom: none;
-  margin-bottom: 0;
-}
-
 .gift-group {
-  padding: 1.25rem;
+  padding: 1.5rem;
   background: var(--white);
   border: 1px solid var(--line);
-  border-top: none;
+  border-left: 4px solid var(--tint, var(--accent));
+  margin-bottom: 1.25rem;
 }
 
-.gift-group + .gift-group {
-  border-top: 1px solid var(--line);
-}
+.gift-group--terracota { --tint: var(--accent); }
+.gift-group--musgo { --tint: var(--status-temos); }
+.gift-group--mostarda { --tint: var(--status-queremos); }
+.gift-group--tinta { --tint: var(--ink); }
+.gift-group--areia { --tint: var(--accent-dark); }
 
 .gift-group__cat {
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1.5px;
-  color: var(--ink-soft);
-  margin: 0 0 0.85rem;
+  color: var(--tint, var(--ink-soft));
+  margin: 0 0 1rem;
 }
 
 .gift-group__grid {
@@ -372,6 +264,20 @@
   font-weight: 600;
   padding: 0.15rem 0.45rem;
   letter-spacing: 0.3px;
+}
+
+.gift-card__completo {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0.5rem;
+  background: rgba(75, 122, 90, 0.85);
+  color: var(--white);
+  font-size: 0.82rem;
+  font-weight: 600;
 }
 
 .gift-card__body {
@@ -469,73 +375,6 @@
 
 .gift-card__btn:hover {
   filter: brightness(1.12);
-}
-
-/* ---- Category groups within a section ---- */
-.enxoval-expand__groups {
-  padding: 0.5rem 0;
-}
-
-.enxoval-expand__group {
-  padding: 0 1.25rem;
-}
-
-.enxoval-expand__group + .enxoval-expand__group {
-  border-top: 1px solid var(--line);
-}
-
-.enxoval-expand__cat {
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  color: var(--ink-soft);
-  margin: 0;
-  padding: 0.85rem 0 0.25rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.enxoval-expand__cat span {
-  font-size: 0.7rem;
-  color: var(--ink-faint);
-  font-weight: 500;
-}
-
-/* ---- Item row ---- */
-.enxoval-row {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  padding: 0.65rem 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
-}
-
-.enxoval-row:last-child {
-  border-bottom: none;
-}
-
-.enxoval-row__nome {
-  flex: 1;
-  font-size: 0.92rem;
-  color: var(--ink);
-}
-
-.enxoval-row__nome--done {
-  text-decoration: line-through;
-  color: var(--ink-faint);
-}
-
-.enxoval-row__qty {
-  font-size: 0.78rem;
-  color: var(--ink-faint);
-  font-variant-numeric: tabular-nums;
-}
-
-/* ---- Guest row ---- */
-.enxoval-row--guest {
-  padding: 0.55rem 0;
 }
 
 /* ---- Edit modal ---- */
@@ -719,17 +558,8 @@
   .enxoval {
     padding: 3rem 1rem 4rem;
   }
-  .enxoval-cards {
-    gap: 0.5rem;
-  }
-  .enxoval-card {
-    padding: 1rem 0.5rem 0.75rem;
-  }
-  .enxoval-card strong {
-    font-size: 1.6rem;
-  }
-  .enxoval-card span {
-    font-size: 0.6rem;
+  .enxoval-hero-stat {
+    padding: 1.25rem;
   }
   .paleta-swatch {
     width: 110px;

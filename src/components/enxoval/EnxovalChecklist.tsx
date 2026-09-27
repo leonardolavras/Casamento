@@ -11,8 +11,9 @@ import { PALETA_CORES, PIX_KEY } from "../../config/site";
 import { PixModal } from "../common/PixModal";
 import "./Enxoval.css";
 
-/** Página pública do enxoval: somente leitura para convidados.
- * Gerenciamento completo (adicionar/editar/status) fica em /noivos. */
+/** Página pública da lista de presentes: somente leitura para convidados.
+ * Gerenciamento completo (itens, status "já temos", edição) fica em /noivos —
+ * pra quem vem presentear, só interessa o que ainda falta e quanto custa. */
 
 // Alterna a categoria por uma paleta de tons do próprio site, pra dar
 // personalidade sem sair da identidade visual (nada de cor aleatória).
@@ -21,22 +22,8 @@ function tintFor(cat: EnxovalCategoria): (typeof TINTS)[number] {
   return TINTS[ENXOVAL_CATEGORIAS.indexOf(cat) % TINTS.length];
 }
 
-function scrollToSection(id: string) {
-  const el = document.getElementById(id);
-  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-}
-
 function formatBRL(valor: number): string {
   return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-}
-
-function TemosRow({ item }: { item: EnxovalItem }) {
-  return (
-    <div className="enxoval-row enxoval-row--guest">
-      <span className="enxoval-row__nome enxoval-row__nome--done">{item.nome}</span>
-      {item.quantidade > 1 && <span className="enxoval-row__qty">{item.quantidade}x</span>}
-    </div>
-  );
 }
 
 function GiftCard({
@@ -56,6 +43,7 @@ function GiftCard({
   const tint = tintFor(item.categoria);
   const meta = item.preco_estimado;
   const pct = meta ? Math.min(100, Math.round((arrecadado / meta) * 100)) : 0;
+  const completo = meta != null && arrecadado >= meta;
 
   return (
     <div className={`gift-card gift-card--${tint} ${featured ? "gift-card--featured" : ""}`}>
@@ -66,6 +54,7 @@ function GiftCard({
           <span className="gift-card__icone">{ENXOVAL_CATEGORIA_ICONE[item.categoria]}</span>
         )}
         {item.quantidade > 1 && <span className="gift-card__qty">{item.quantidade}x</span>}
+        {completo && <span className="gift-card__completo">Presente completo! 🎉</span>}
       </div>
       <div className="gift-card__body">
         <span className="gift-card__cat">{item.categoria}</span>
@@ -83,7 +72,7 @@ function GiftCard({
           </div>
         ) : (
           <span className="gift-card__preco">
-            {arrecadado > 0 ? `${formatBRL(arrecadado)} contribuídos` : "Valor livre"}
+            {arrecadado > 0 ? `${formatBRL(arrecadado)} contribuídos` : "Valor a definir"}
           </span>
         )}
 
@@ -93,7 +82,7 @@ function GiftCard({
           </span>
         )}
 
-        {podePresentear && (
+        {podePresentear && !completo && (
           <button type="button" className="gift-card__btn" onClick={() => onPresentear(item)}>
             Presentear
           </button>
@@ -108,11 +97,7 @@ export function EnxovalChecklist() {
   const { presentes, registrar } = useEnxovalPresentes();
   const [presenteando, setPresenteando] = useState<EnxovalItem | null>(null);
 
-  const grouped = useMemo(() => {
-    const temos = items.filter((i) => i.status === "temos");
-    const precisamos = items.filter((i) => i.status === "precisamos");
-    return { temos, precisamos };
-  }, [items]);
+  const precisamos = useMemo(() => items.filter((i) => i.status !== "temos"), [items]);
 
   const contribuicoesPorItem = useMemo(() => {
     const map = new Map<string, { total: number; count: number }>();
@@ -124,11 +109,20 @@ export function EnxovalChecklist() {
     return map;
   }, [presentes]);
 
-  const pct = items.length ? Math.round((grouped.temos.length / items.length) * 100) : 0;
+  const { totalMeta, totalArrecadado } = useMemo(() => {
+    let meta = 0;
+    let arrecadado = 0;
+    for (const item of precisamos) {
+      if (item.preco_estimado) meta += item.preco_estimado;
+      const c = contribuicoesPorItem.get(item.id);
+      if (c) arrecadado += c.total;
+    }
+    return { totalMeta: meta, totalArrecadado: arrecadado };
+  }, [precisamos, contribuicoesPorItem]);
 
-  const categoriasComPresente = ENXOVAL_CATEGORIAS.filter((cat) =>
-    grouped.precisamos.some((i) => i.categoria === cat),
-  );
+  const pctGeral = totalMeta > 0 ? Math.min(100, Math.round((totalArrecadado / totalMeta) * 100)) : 0;
+
+  const categorias = ENXOVAL_CATEGORIAS.filter((cat) => precisamos.some((i) => i.categoria === cat));
 
   function handlePresentear(item: EnxovalItem) {
     if (PIX_KEY) {
@@ -183,101 +177,46 @@ export function EnxovalChecklist() {
         <p className="enxoval__loading">Carregando...</p>
       ) : (
         <>
-          {items.length > 0 && (
-            <div className="enxoval-progress">
-              <div className="enxoval-progress__bar">
-                <div className="enxoval-progress__fill" style={{ width: `${pct}%` }} />
+          {totalMeta > 0 && (
+            <div className="enxoval-hero-stat">
+              <div className="enxoval-hero-stat__bar">
+                <div className="enxoval-hero-stat__fill" style={{ width: `${pctGeral}%` }} />
               </div>
-              <div className="enxoval-progress__info">
-                <span className="enxoval-progress__pct">{pct}% pronto</span>
-                <span className="enxoval-progress__label">
-                  {grouped.temos.length} de {items.length} itens
-                </span>
+              <div className="enxoval-hero-stat__info">
+                <span className="enxoval-hero-stat__valor">{formatBRL(totalArrecadado)}</span>
+                <span className="enxoval-hero-stat__label">arrecadados de {formatBRL(totalMeta)}</span>
               </div>
             </div>
           )}
 
-          <div className="enxoval-cards enxoval-cards--2">
-            <button
-              type="button"
-              className="enxoval-card enxoval-card--precisamos"
-              onClick={() => scrollToSection("enxoval-presentes")}
-            >
-              <strong>{grouped.precisamos.length}</strong>
-              <span>Para presentear</span>
-            </button>
-            <button
-              type="button"
-              className="enxoval-card enxoval-card--temos"
-              onClick={() => scrollToSection("enxoval-temos")}
-            >
-              <strong>{grouped.temos.length}</strong>
-              <span>Já temos</span>
-            </button>
-          </div>
-
-          <div id="enxoval-presentes" className="enxoval-section enxoval-section--presentes">
-            <div className="enxoval-section__header enxoval-section__header--precisamos">
-              <h3>O que precisamos</h3>
-              <span className="enxoval-section__count">{grouped.precisamos.length}</span>
-            </div>
-            {grouped.precisamos.length === 0 ? (
-              <p className="enxoval-section__vazio">Nenhum item por aqui ainda.</p>
-            ) : (
-              categoriasComPresente.map((cat) => (
-                <div key={cat} className="gift-group">
-                  <h4 className="gift-group__cat">
-                    {ENXOVAL_CATEGORIA_ICONE[cat]} {cat}
-                  </h4>
-                  <div className="gift-group__grid">
-                    {grouped.precisamos
-                      .filter((i) => i.categoria === cat)
-                      .map((item, idx) => {
-                        const c = contribuicoesPorItem.get(item.id);
-                        return (
-                          <GiftCard
-                            key={item.id}
-                            item={item}
-                            featured={idx === 0}
-                            arrecadado={c?.total ?? 0}
-                            contribuintes={c?.count ?? 0}
-                            onPresentear={handlePresentear}
-                          />
-                        );
-                      })}
-                  </div>
+          {precisamos.length === 0 ? (
+            <p className="enxoval-section__vazio">Nenhum item por aqui ainda.</p>
+          ) : (
+            categorias.map((cat) => (
+              <div key={cat} className={`gift-group gift-group--${tintFor(cat)}`}>
+                <h4 className="gift-group__cat">
+                  {ENXOVAL_CATEGORIA_ICONE[cat]} {cat}
+                </h4>
+                <div className="gift-group__grid">
+                  {precisamos
+                    .filter((i) => i.categoria === cat)
+                    .map((item, idx) => {
+                      const c = contribuicoesPorItem.get(item.id);
+                      return (
+                        <GiftCard
+                          key={item.id}
+                          item={item}
+                          featured={idx === 0}
+                          arrecadado={c?.total ?? 0}
+                          contribuintes={c?.count ?? 0}
+                          onPresentear={handlePresentear}
+                        />
+                      );
+                    })}
                 </div>
-              ))
-            )}
-          </div>
-
-          <div id="enxoval-temos" className="enxoval-section">
-            <div className="enxoval-section__header enxoval-section__header--temos">
-              <h3>O que já temos</h3>
-              <span className="enxoval-section__count">{grouped.temos.length}</span>
-            </div>
-            {grouped.temos.length === 0 ? (
-              <p className="enxoval-section__vazio">Nenhum item marcado como 'já temos' ainda.</p>
-            ) : (
-              <div className="enxoval-expand__groups">
-                {ENXOVAL_CATEGORIAS.filter((cat) => grouped.temos.some((i) => i.categoria === cat)).map((cat) => (
-                  <div key={cat} className="enxoval-expand__group">
-                    <h4 className="enxoval-expand__cat">
-                      {ENXOVAL_CATEGORIA_ICONE[cat]} {cat}
-                      <span>{grouped.temos.filter((i) => i.categoria === cat).length}</span>
-                    </h4>
-                    <div className="enxoval-expand__items">
-                      {grouped.temos
-                        .filter((i) => i.categoria === cat)
-                        .map((item) => (
-                          <TemosRow key={item.id} item={item} />
-                        ))}
-                    </div>
-                  </div>
-                ))}
               </div>
-            )}
-          </div>
+            ))
+          )}
         </>
       )}
 

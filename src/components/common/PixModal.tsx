@@ -11,7 +11,12 @@ interface PixModalProps {
   onConfirm: (nomeDoador: string, valor: number) => Promise<void>;
 }
 
+function formatBRL(valor: number): string {
+  return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
 export function PixModal({ itemNome, valorSugerido, onClose, onConfirm }: PixModalProps) {
+  const valorFixo = valorSugerido != null && valorSugerido > 0;
   const [valor, setValor] = useState(valorSugerido ? valorSugerido.toFixed(2) : "");
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [copiado, setCopiado] = useState(false);
@@ -96,19 +101,26 @@ export function PixModal({ itemNome, valorSugerido, onClose, onConfirm }: PixMod
 
         <p className="pix-modal__item">{itemNome}</p>
 
-        <label className="pix-modal__valor">
-          <span>Valor da contribuição</span>
-          <div className="pix-modal__valor-input">
-            <span>R$</span>
-            <input
-              type="text"
-              inputMode="decimal"
-              value={valor}
-              onChange={(e) => setValor(e.target.value)}
-              placeholder="0,00"
-            />
+        {valorFixo ? (
+          <div className="pix-modal__valor-fixo">
+            <span>Valor deste presente</span>
+            <strong>{formatBRL(valorSugerido!)}</strong>
           </div>
-        </label>
+        ) : (
+          <label className="pix-modal__valor">
+            <span>Valor da contribuição</span>
+            <div className="pix-modal__valor-input">
+              <span>R$</span>
+              <input
+                type="text"
+                inputMode="decimal"
+                value={valor}
+                onChange={(e) => setValor(e.target.value)}
+                placeholder="0,00"
+              />
+            </div>
+          </label>
+        )}
 
         <div className="pix-modal__qr">
           {qrDataUrl ? (

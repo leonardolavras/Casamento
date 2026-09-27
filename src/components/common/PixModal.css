@@ -97,6 +97,29 @@
   color: var(--ink-soft);
 }
 
+.pix-modal__valor-fixo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+  background: var(--accent-soft);
+  border: 1px solid var(--line);
+}
+
+.pix-modal__valor-fixo span {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--ink-soft);
+}
+
+.pix-modal__valor-fixo strong {
+  font-family: var(--font-serif);
+  font-size: 1.3rem;
+  color: var(--accent-dark);
+}
+
 .pix-modal__valor-input input {
   flex: 1;
   border: none;
