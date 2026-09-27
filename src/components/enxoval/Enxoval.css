@@ -267,6 +267,133 @@
   margin: 0;
 }
 
+/* ---- Gift cards (o que precisamos) ---- */
+.enxoval-section--presentes {
+  background: transparent;
+  border: none;
+}
+
+.enxoval-section--presentes > .enxoval-section__header {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.gift-group {
+  padding: 1.25rem;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-top: none;
+}
+
+.gift-group + .gift-group {
+  border-top: 1px solid var(--line);
+}
+
+.gift-group__cat {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--ink-soft);
+  margin: 0 0 0.85rem;
+}
+
+.gift-group__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.85rem;
+}
+
+.gift-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  overflow: hidden;
+  transition: transform 0.15s, box-shadow 0.2s;
+}
+
+.gift-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.gift-card__media {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--paper-alt);
+  overflow: hidden;
+}
+
+.gift-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.gift-card__icone {
+  font-size: 2.5rem;
+  opacity: 0.6;
+}
+
+.gift-card__body {
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.gift-card__nome {
+  font-size: 0.85rem;
+  color: var(--ink);
+  margin: 0;
+  line-height: 1.3;
+  min-height: 2.2em;
+}
+
+.gift-card__meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.4rem;
+}
+
+.gift-card__preco {
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--accent);
+}
+
+.gift-card__qty {
+  font-size: 0.72rem;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.gift-card__btn {
+  padding: 0.55rem;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  font: inherit;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.gift-card__btn:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
 /* ---- Category groups within a section ---- */
 .enxoval-expand__groups {
   padding: 0.5rem 0;
@@ -332,25 +459,6 @@
 /* ---- Guest row ---- */
 .enxoval-row--guest {
   padding: 0.55rem 0;
-}
-
-.enxoval-row__gift {
-  flex-shrink: 0;
-  padding: 0.3rem 0.75rem;
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--accent);
-  border: 1px solid var(--accent);
-  text-decoration: none;
-  transition: background 0.15s, color 0.15s;
-  white-space: nowrap;
-}
-
-.enxoval-row__gift:hover {
-  background: var(--accent);
-  color: var(--paper);
 }
 
 /* ---- Edit modal ---- */

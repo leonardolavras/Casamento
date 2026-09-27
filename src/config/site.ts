@@ -41,11 +41,15 @@ export const RECEPCAO: EventoInfo = {
 
 export const DRESS_CODE = "Traje social. Cores a evitar: branco.";
 
-export const PIX_KEY: string | null = null;
+// Dados usados para gerar o QR Code Pix na lista de presentes.
+export const PIX_KEY: string | null = "+5519995869463";
+export const PIX_TITULAR = `${COUPLE.nome1} e ${COUPLE.nome2}`;
+// TODO: confirmar a cidade real do titular da chave Pix (aparece no app do convidado).
+export const PIX_CIDADE = "Campinas";
 
 export const PALETA_CORES: { nome: string; hex: string; descricao?: string }[] = [
   { nome: "Coral", hex: "#DAC8B3", descricao: "Bege Perfeito" },
-]; // Coloque sua chave Pix aqui (CPF, email, telefone ou chave aleatória)
+];
 
 export const GALLERY_PHOTOS: { src: string; caption: string }[] = [
   { src: "/fotos/foto1.jpeg", caption: "Um momento nosso" },

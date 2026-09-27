@@ -14,17 +14,29 @@ function timeAgo(dateStr: string) {
   return `${days}d`;
 }
 
-function RecadoCard({ nome, mensagem, created_at }: { nome: string; mensagem: string; created_at: string }) {
+/** Gira e varia a cor de cada nota de forma determinística a partir do id,
+ * pra manter o mesmo visual entre re-renders sem parecer aleatório demais. */
+function noteStyleFrom(id: string) {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
+  const rotation = (hash % 7) - 3; // -3deg a 3deg
+  const variant = hash % 4;
+  return { rotation, variant };
+}
+
+function RecadoCard({ id, nome, mensagem, created_at }: { id: string; nome: string; mensagem: string; created_at: string }) {
   const { ref, visible } = useScrollReveal<HTMLDivElement>();
+  const { rotation, variant } = noteStyleFrom(id);
   return (
     <div
       ref={ref}
-      className="recado-card"
+      className={`recado-card recado-card--v${variant}`}
       style={{
         opacity: visible ? 1 : 0,
-        transform: visible ? "none" : "translateY(24px)",
+        transform: visible ? `rotate(${rotation}deg)` : `translateY(24px) rotate(${rotation}deg)`,
       }}
     >
+      <span className="recado-card__tape" aria-hidden="true" />
       <p className="recado-card__msg">{mensagem}</p>
       <div className="recado-card__footer">
         <span className="recado-card__nome">{nome}</span>
