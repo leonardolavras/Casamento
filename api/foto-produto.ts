@@ -78,12 +78,15 @@ async function validarUrl(bruta: string): Promise<URL> {
 }
 
 // fetch com redirect manual pra validar o destino de cada salto
-async function buscar(bruta: string, accept: string): Promise<{ res: Response; url: URL }> {
+async function buscar(bruta: string, accept: string, tokenMl?: string | null): Promise<{ res: Response; url: URL }> {
   let url = await validarUrl(bruta);
   for (let i = 0; i <= MAX_REDIRECTS; i++) {
+    // o token só vai pra API do ML, nunca pra outro host (nem depois de redirect)
+    const auth: Record<string, string> =
+      tokenMl && url.hostname === "api.mercadolibre.com" ? { authorization: `Bearer ${tokenMl}` } : {};
     const res = await fetch(url, {
       redirect: "manual",
-      headers: { ...HEADERS, accept },
+      headers: { ...HEADERS, accept, ...auth },
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
     const destino = res.status >= 300 && res.status < 400 ? res.headers.get("location") : null;
@@ -265,16 +268,42 @@ export function idsMercadoLivre(link: string): { anuncios: string[]; produto: st
   return { anuncios: [...anuncios], produto };
 }
 
-async function lerJson(url: string): Promise<unknown> {
-  const { res } = await buscar(url, "application/json");
-  if (!res.ok) {
-    await res.body?.cancel();
-    return null;
-  }
+// Credencial opcional de app do ML (developers.mercadolivre.com.br), nas
+// variáveis ML_CLIENT_ID / ML_CLIENT_SECRET da Vercel. Sem elas, tenta sem token.
+let tokenCache: { valor: string; expira: number } | null = null;
+
+async function tokenMercadoLivre(): Promise<string | null> {
+  const clientId = process.env.ML_CLIENT_ID;
+  const clientSecret = process.env.ML_CLIENT_SECRET;
+  if (!clientId || !clientSecret) return null;
+  if (tokenCache && tokenCache.expira > Date.now()) return tokenCache.valor;
   try {
-    return JSON.parse(new TextDecoder().decode(await lerLimitado(res, 1_000_000)));
+    const res = await fetch(`${API_ML}/oauth/token`, {
+      method: "POST",
+      headers: { "content-type": "application/x-www-form-urlencoded", accept: "application/json" },
+      body: new URLSearchParams({ grant_type: "client_credentials", client_id: clientId, client_secret: clientSecret }),
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+    });
+    if (!res.ok) return null;
+    const corpo = (await res.json()) as { access_token?: string; expires_in?: number };
+    if (!corpo.access_token) return null;
+    tokenCache = { valor: corpo.access_token, expira: Date.now() + ((corpo.expires_in ?? 21600) - 300) * 1000 };
+    return corpo.access_token;
   } catch {
     return null;
+  }
+}
+
+async function lerJson(url: string, token: string | null): Promise<{ json: unknown; status: number }> {
+  try {
+    const { res } = await buscar(url, "application/json", token);
+    if (!res.ok) {
+      await res.body?.cancel();
+      return { json: null, status: res.status };
+    }
+    return { json: JSON.parse(new TextDecoder().decode(await lerLimitado(res, 1_000_000))), status: res.status };
+  } catch {
+    return { json: null, status: 0 };
   }
 }
 
@@ -287,13 +316,25 @@ function urlsDeFotos(json: unknown): string[] {
   return urls.map((u) => u.replace(/^http:\/\//, "https://"));
 }
 
-async function fotosMercadoLivre(ids: { anuncios: string[]; produto: string | null }): Promise<string[]> {
+/** Fotos pela API do ML; `diagnostico` guarda o status de cada tentativa pra mensagem de erro. */
+async function fotosMercadoLivre(
+  ids: { anuncios: string[]; produto: string | null },
+  diagnostico: string[],
+): Promise<string[]> {
+  const token = await tokenMercadoLivre();
   const fotos: string[] = [];
   for (const id of ids.anuncios.slice(0, 2)) {
-    fotos.push(...urlsDeFotos(await lerJson(`${API_ML}/items/${id}`).catch(() => null)));
+    const r = await lerJson(`${API_ML}/items/${id}`, token);
+    diagnostico.push(`anúncio ${r.status || "sem resposta"}`);
+    fotos.push(...urlsDeFotos(r.json));
     if (fotos.length) return fotos;
   }
-  if (ids.produto) fotos.push(...urlsDeFotos(await lerJson(`${API_ML}/products/${ids.produto}`).catch(() => null)));
+  if (ids.produto) {
+    const r = await lerJson(`${API_ML}/products/${ids.produto}`, token);
+    diagnostico.push(`produto ${r.status || "sem resposta"}`);
+    fotos.push(...urlsDeFotos(r.json));
+  }
+  if (!token) diagnostico.push("sem credencial ML");
   return fotos;
 }
 
@@ -318,13 +359,20 @@ export async function GET(request: Request): Promise<Response> {
   const link = new URL(request.url).searchParams.get("url")?.trim();
   if (!link) return respostaErro(400, "Cole o link do produto.");
 
+  const diagnostico: string[] = [];
+  const bloqueioMl = () =>
+    new ErroFoto(
+      502,
+      `O Mercado Livre bloqueou a busca automática desse link. Envie a foto manualmente (um print do anúncio serve). [${diagnostico.join(", ")}]`,
+    );
+
   try {
     await validarUrl(link);
 
     const temIds = (ids: ReturnType<typeof idsMercadoLivre>) => Boolean(ids && (ids.anuncios.length || ids.produto));
     const tentarApiMl = async (ids: ReturnType<typeof idsMercadoLivre>) => {
       if (!ids || !temIds(ids)) return null;
-      const fotos = await fotosMercadoLivre(ids);
+      const fotos = await fotosMercadoLivre(ids, diagnostico);
       return fotos.length ? baixarPrimeira(fotos) : null;
     };
 
@@ -349,12 +397,9 @@ export async function GET(request: Request): Promise<Response> {
 
     if (!pagina.res.ok) {
       await pagina.res.body?.cancel();
-      throw new ErroFoto(
-        502,
-        ml
-          ? "O Mercado Livre bloqueou a busca automática desse link. Envie a foto manualmente (um print do anúncio serve)."
-          : `A loja não deixou abrir a página (erro ${pagina.res.status}). Tente outro link ou envie a foto.`,
-      );
+      diagnostico.push(`página ${pagina.res.status}`);
+      if (ml) throw bloqueioMl();
+      throw new ErroFoto(502, `A loja não deixou abrir a página (erro ${pagina.res.status}). Tente outro link ou envie a foto.`);
     }
 
     // o link já é a própria imagem
@@ -364,12 +409,9 @@ export async function GET(request: Request): Promise<Response> {
     const html = new TextDecoder().decode(await lerLimitado(pagina.res, MAX_HTML));
     const candidatas = extrairImagens(html, pagina.url);
     if (candidatas.length === 0) {
-      throw new ErroFoto(
-        404,
-        ml
-          ? "O Mercado Livre bloqueou a busca automática desse link. Envie a foto manualmente (um print do anúncio serve)."
-          : "Não achei a foto nessa página. Envie a foto manualmente.",
-      );
+      diagnostico.push("página sem foto");
+      if (ml) throw bloqueioMl();
+      throw new ErroFoto(404, "Não achei a foto nessa página. Envie a foto manualmente.");
     }
 
     const imagem = await baixarPrimeira(candidatas);

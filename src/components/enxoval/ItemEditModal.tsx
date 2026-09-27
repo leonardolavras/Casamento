@@ -11,7 +11,7 @@ import {
   type EnxovalStatus,
 } from "../../types/enxoval";
 import { uploadEnxovalFoto } from "../../lib/uploadEnxovalFoto";
-import { baixarFotoDoLink, pareceLink } from "../../lib/fotoDoLink";
+import { obterFotoDoLink, pareceLink } from "../../lib/fotoDoLink";
 import { rotuloPreco } from "../../lib/presente";
 import { GiftThumb } from "./GiftThumb";
 import { useTravarRolagem } from "../../hooks/useTravarRolagem";
@@ -80,7 +80,8 @@ export function ItemEditModal({ item, title = "Editar presente", onSave, onClose
     setFotoStatus("buscando");
     setError(null);
     try {
-      setImagemUrl(await uploadEnxovalFoto(await baixarFotoDoLink(url.trim())));
+      const foto = await obterFotoDoLink(url.trim());
+      setImagemUrl(typeof foto === "string" ? foto : await uploadEnxovalFoto(foto));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Não consegui buscar a foto desse link.");
     }
