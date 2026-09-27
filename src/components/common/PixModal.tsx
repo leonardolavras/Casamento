@@ -8,12 +8,17 @@ interface PixModalProps {
   itemNome: string;
   valorSugerido: number | null;
   onClose: () => void;
+  onConfirm: (nomeDoador: string, valor: number) => Promise<void>;
 }
 
-export function PixModal({ itemNome, valorSugerido, onClose }: PixModalProps) {
+export function PixModal({ itemNome, valorSugerido, onClose, onConfirm }: PixModalProps) {
   const [valor, setValor] = useState(valorSugerido ? valorSugerido.toFixed(2) : "");
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [copiado, setCopiado] = useState(false);
+  const [nomeDoador, setNomeDoador] = useState("");
+  const [confirmando, setConfirmando] = useState(false);
+  const [confirmado, setConfirmado] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
 
   const valorNum = parseFloat(valor.replace(",", ".")) || 0;
 
@@ -52,7 +57,34 @@ export function PixModal({ itemNome, valorSugerido, onClose }: PixModalProps) {
     }
   }
 
+  async function handleConfirm(e: React.FormEvent) {
+    e.preventDefault();
+    if (!nomeDoador.trim() || valorNum <= 0 || confirmando) return;
+    setConfirmando(true);
+    setErro(null);
+    try {
+      await onConfirm(nomeDoador.trim(), valorNum);
+      setConfirmado(true);
+    } catch (err) {
+      setErro(err instanceof Error ? err.message : "Não foi possível registrar agora.");
+    }
+    setConfirmando(false);
+  }
+
   if (!PIX_KEY) return null;
+
+  if (confirmado) {
+    return (
+      <div className="pix-modal-overlay" onClick={onClose}>
+        <div className="pix-modal pix-modal--sucesso" onClick={(e) => e.stopPropagation()}>
+          <span className="pix-modal__check">✓</span>
+          <h3>Muito obrigado, {nomeDoador.split(" ")[0]}!</h3>
+          <p>Seu carinho com "{itemNome}" significa muito pra gente.</p>
+          <button type="button" className="pix-modal__copy" onClick={onClose}>Fechar</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="pix-modal-overlay" onClick={onClose}>
@@ -95,6 +127,23 @@ export function PixModal({ itemNome, valorSugerido, onClose }: PixModalProps) {
         <p className="pix-modal__hint">
           Abra o app do seu banco, escolha Pix Copia e Cola ou escaneie o QR Code acima.
         </p>
+
+        <form className="pix-modal__confirm" onSubmit={handleConfirm}>
+          <span className="pix-modal__confirm-label">Já pagou? Deixe seu nome pra gente agradecer</span>
+          <div className="pix-modal__confirm-row">
+            <input
+              type="text"
+              placeholder="Seu nome"
+              value={nomeDoador}
+              onChange={(e) => setNomeDoador(e.target.value)}
+              maxLength={80}
+            />
+            <button type="submit" disabled={!nomeDoador.trim() || valorNum <= 0 || confirmando}>
+              {confirmando ? "..." : "Confirmar"}
+            </button>
+          </div>
+          {erro && <span className="pix-modal__confirm-erro">{erro}</span>}
+        </form>
       </div>
     </div>
   );

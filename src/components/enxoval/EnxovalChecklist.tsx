@@ -1,8 +1,10 @@
 import { useMemo, useState } from "react";
 import { useEnxovalItems } from "../../hooks/useEnxovalItems";
+import { useEnxovalPresentes } from "../../hooks/useEnxovalPresentes";
 import {
   ENXOVAL_CATEGORIAS,
   ENXOVAL_CATEGORIA_ICONE,
+  type EnxovalCategoria,
   type EnxovalItem,
 } from "../../types/enxoval";
 import { PALETA_CORES, PIX_KEY } from "../../config/site";
@@ -11,6 +13,13 @@ import "./Enxoval.css";
 
 /** Página pública do enxoval: somente leitura para convidados.
  * Gerenciamento completo (adicionar/editar/status) fica em /noivos. */
+
+// Alterna a categoria por uma paleta de tons do próprio site, pra dar
+// personalidade sem sair da identidade visual (nada de cor aleatória).
+const TINTS = ["terracota", "musgo", "mostarda", "tinta", "areia"] as const;
+function tintFor(cat: EnxovalCategoria): (typeof TINTS)[number] {
+  return TINTS[ENXOVAL_CATEGORIAS.indexOf(cat) % TINTS.length];
+}
 
 function scrollToSection(id: string) {
   const el = document.getElementById(id);
@@ -30,26 +39,60 @@ function TemosRow({ item }: { item: EnxovalItem }) {
   );
 }
 
-function GiftCard({ item, onPresentear }: { item: EnxovalItem; onPresentear: (item: EnxovalItem) => void }) {
+function GiftCard({
+  item,
+  featured,
+  arrecadado,
+  contribuintes,
+  onPresentear,
+}: {
+  item: EnxovalItem;
+  featured: boolean;
+  arrecadado: number;
+  contribuintes: number;
+  onPresentear: (item: EnxovalItem) => void;
+}) {
   const podePresentear = PIX_KEY || item.link;
+  const tint = tintFor(item.categoria);
+  const meta = item.preco_estimado;
+  const pct = meta ? Math.min(100, Math.round((arrecadado / meta) * 100)) : 0;
 
   return (
-    <div className="gift-card">
+    <div className={`gift-card gift-card--${tint} ${featured ? "gift-card--featured" : ""}`}>
       <div className="gift-card__media">
         {item.imagem_url ? (
           <img src={item.imagem_url} alt={item.nome} loading="lazy" />
         ) : (
           <span className="gift-card__icone">{ENXOVAL_CATEGORIA_ICONE[item.categoria]}</span>
         )}
+        {item.quantidade > 1 && <span className="gift-card__qty">{item.quantidade}x</span>}
       </div>
       <div className="gift-card__body">
+        <span className="gift-card__cat">{item.categoria}</span>
         <p className="gift-card__nome">{item.nome}</p>
-        <div className="gift-card__meta">
+
+        {meta ? (
+          <div className="gift-card__progresso">
+            <div className="gift-card__bar">
+              <div className="gift-card__bar-fill" style={{ width: `${pct}%` }} />
+            </div>
+            <div className="gift-card__progresso-info">
+              <span>{formatBRL(arrecadado)}</span>
+              <span className="gift-card__meta">de {formatBRL(meta)}</span>
+            </div>
+          </div>
+        ) : (
           <span className="gift-card__preco">
-            {item.preco_estimado ? formatBRL(item.preco_estimado) : "Valor livre"}
+            {arrecadado > 0 ? `${formatBRL(arrecadado)} contribuídos` : "Valor livre"}
           </span>
-          {item.quantidade > 1 && <span className="gift-card__qty">{item.quantidade}x</span>}
-        </div>
+        )}
+
+        {contribuintes > 0 && (
+          <span className="gift-card__contribuintes">
+            {contribuintes === 1 ? "1 pessoa já contribuiu" : `${contribuintes} pessoas já contribuíram`}
+          </span>
+        )}
+
         {podePresentear && (
           <button type="button" className="gift-card__btn" onClick={() => onPresentear(item)}>
             Presentear
@@ -62,6 +105,7 @@ function GiftCard({ item, onPresentear }: { item: EnxovalItem; onPresentear: (it
 
 export function EnxovalChecklist() {
   const { items, loading, error } = useEnxovalItems();
+  const { presentes, registrar } = useEnxovalPresentes();
   const [presenteando, setPresenteando] = useState<EnxovalItem | null>(null);
 
   const grouped = useMemo(() => {
@@ -69,6 +113,16 @@ export function EnxovalChecklist() {
     const precisamos = items.filter((i) => i.status === "precisamos");
     return { temos, precisamos };
   }, [items]);
+
+  const contribuicoesPorItem = useMemo(() => {
+    const map = new Map<string, { total: number; count: number }>();
+    for (const p of presentes) {
+      if (!p.item_id) continue;
+      const atual = map.get(p.item_id) ?? { total: 0, count: 0 };
+      map.set(p.item_id, { total: atual.total + p.valor, count: atual.count + 1 });
+    }
+    return map;
+  }, [presentes]);
 
   const pct = items.length ? Math.round((grouped.temos.length / items.length) * 100) : 0;
 
@@ -82,6 +136,17 @@ export function EnxovalChecklist() {
     } else if (item.link) {
       window.open(item.link, "_blank", "noopener,noreferrer");
     }
+  }
+
+  async function handleConfirm(nomeDoador: string, valor: number) {
+    if (!presenteando) return;
+    await registrar({
+      item_id: presenteando.id,
+      item_nome: presenteando.nome,
+      valor,
+      nome_doador: nomeDoador,
+      mensagem: null,
+    });
   }
 
   return (
@@ -167,9 +232,19 @@ export function EnxovalChecklist() {
                   <div className="gift-group__grid">
                     {grouped.precisamos
                       .filter((i) => i.categoria === cat)
-                      .map((item) => (
-                        <GiftCard key={item.id} item={item} onPresentear={handlePresentear} />
-                      ))}
+                      .map((item, idx) => {
+                        const c = contribuicoesPorItem.get(item.id);
+                        return (
+                          <GiftCard
+                            key={item.id}
+                            item={item}
+                            featured={idx === 0}
+                            arrecadado={c?.total ?? 0}
+                            contribuintes={c?.count ?? 0}
+                            onPresentear={handlePresentear}
+                          />
+                        );
+                      })}
                   </div>
                 </div>
               ))
@@ -211,6 +286,7 @@ export function EnxovalChecklist() {
           itemNome={presenteando.nome}
           valorSugerido={presenteando.preco_estimado}
           onClose={() => setPresenteando(null)}
+          onConfirm={handleConfirm}
         />
       )}
     </section>

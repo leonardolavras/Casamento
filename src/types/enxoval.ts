@@ -62,3 +62,15 @@ export type EnxovalItemInput = Omit<
   EnxovalItem,
   "id" | "created_at" | "updated_at"
 >;
+
+export type EnxovalPresente = {
+  id: string;
+  item_id: string | null;
+  item_nome: string;
+  valor: number;
+  nome_doador: string;
+  mensagem: string | null;
+  created_at: string;
+};
+
+export type EnxovalPresenteInput = Omit<EnxovalPresente, "id" | "created_at">;

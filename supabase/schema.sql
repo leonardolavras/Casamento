@@ -99,6 +99,33 @@ create policy "Mural: escrita publica"
   on public.mural_recados for insert
   with check (true);
 
+-- Contribuições da lista de presentes (autodeclaradas pelo convidado após
+-- pagar via Pix — não há confirmação automática de pagamento sem um gateway
+-- pago com webhook, então o convidado informa o próprio nome ao concluir).
+create table if not exists public.enxoval_presentes (
+  id uuid primary key default gen_random_uuid(),
+  item_id uuid references public.enxoval_itens(id) on delete set null,
+  item_nome text not null,
+  valor numeric(10, 2) not null,
+  nome_doador text not null,
+  mensagem text,
+  created_at timestamptz not null default now()
+);
+
+alter table public.enxoval_presentes enable row level security;
+
+drop policy if exists "Presentes: leitura publica" on public.enxoval_presentes;
+create policy "Presentes: leitura publica"
+  on public.enxoval_presentes for select
+  using (true);
+
+drop policy if exists "Presentes: escrita publica" on public.enxoval_presentes;
+create policy "Presentes: escrita publica"
+  on public.enxoval_presentes for all
+  using (true)
+  with check (true);
+
 -- Habilita Supabase Realtime nas tabelas para sync em tempo real
 alter publication supabase_realtime add table public.enxoval_itens;
 alter publication supabase_realtime add table public.mural_recados;
+alter publication supabase_realtime add table public.enxoval_presentes;

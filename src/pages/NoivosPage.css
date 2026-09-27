@@ -358,6 +358,121 @@
   color: var(--status-precisamos) !important;
 }
 
+/* ---- Presentes recebidos ---- */
+.noivos-presentes {
+  margin-top: 2.5rem;
+}
+
+.noivos-presentes__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+}
+
+.noivos-presentes__header h2 {
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: var(--ink);
+  margin: 0;
+}
+
+.noivos-presentes__total {
+  font-family: var(--font-serif);
+  font-size: 1.3rem;
+  color: var(--status-temos);
+  font-variant-numeric: tabular-nums;
+}
+
+.noivos-presentes__aviso {
+  font-size: 0.78rem;
+  color: var(--ink-faint);
+  margin: 0 0 1.25rem;
+}
+
+.noivos-presentes__vazio {
+  text-align: center;
+  padding: 2rem 1rem;
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: var(--ink-faint);
+  border: 1px solid var(--line);
+  background: var(--white);
+}
+
+.noivos-presentes__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.noivos-presente {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.75rem;
+  border: 1px solid var(--line);
+  background: var(--white);
+}
+
+.noivos-presente__foto {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--paper-alt);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+}
+
+.noivos-presente__foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.noivos-presente__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.noivos-presente__item {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.noivos-presente__doador {
+  margin: 0.15rem 0 0;
+  font-size: 0.8rem;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.noivos-presente__meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+.noivos-presente__valor {
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  color: var(--status-temos);
+}
+
+.noivos-presente__data {
+  font-size: 0.68rem;
+  color: var(--ink-faint);
+}
+
 /* ---- Responsive ---- */
 @media (max-width: 640px) {
   .noivos-stats {

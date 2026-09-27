@@ -1,4 +1,4 @@
-import type { EnxovalItem, EnxovalItemInput } from "./enxoval";
+import type { EnxovalItem, EnxovalItemInput, EnxovalPresente, EnxovalPresenteInput } from "./enxoval";
 
 export type MuralRecado = {
   id: string;
@@ -20,6 +20,12 @@ export type Database = {
         Row: MuralRecado;
         Insert: Pick<MuralRecado, "nome" | "mensagem">;
         Update: Partial<Pick<MuralRecado, "nome" | "mensagem">>;
+        Relationships: [];
+      };
+      enxoval_presentes: {
+        Row: EnxovalPresente;
+        Insert: EnxovalPresenteInput;
+        Update: Partial<EnxovalPresenteInput>;
         Relationships: [];
       };
     };

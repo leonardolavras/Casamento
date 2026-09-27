@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useEnxovalItems } from "../hooks/useEnxovalItems";
+import { useEnxovalPresentes } from "../hooks/useEnxovalPresentes";
 import {
   ENXOVAL_CATEGORIA_ICONE,
   ENXOVAL_STATUS,
@@ -11,6 +12,14 @@ import {
 import { COUPLE } from "../config/site";
 import { ItemEditModal } from "../components/enxoval/ItemEditModal";
 import "./NoivosPage.css";
+
+function formatBRL(valor: number): string {
+  return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+function formatData(iso: string): string {
+  return new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+}
 
 const ADMIN_PASSWORD = "lg2028";
 const STORAGE_KEY = "noivos_auth";
@@ -61,10 +70,14 @@ export function NoivosPage() {
 
 function AdminPanel() {
   const { items, loading, error, addItem, updateItem, removeItem } = useEnxovalItems();
+  const { presentes, loading: loadingPresentes } = useEnxovalPresentes();
   const [filter, setFilter] = useState<EnxovalStatus | "todos">("todos");
   const [search, setSearch] = useState("");
   const [editingItem, setEditingItem] = useState<EnxovalItem | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
+
+  const itemsPorId = useMemo(() => new Map(items.map((i) => [i.id, i])), [items]);
+  const totalArrecadado = useMemo(() => presentes.reduce((sum, p) => sum + p.valor, 0), [presentes]);
 
   const filtered = useMemo(() => {
     let list = items;
@@ -221,6 +234,47 @@ function AdminPanel() {
           </table>
         </div>
       )}
+
+      <div className="noivos-presentes">
+        <div className="noivos-presentes__header">
+          <h2>Presentes recebidos</h2>
+          <span className="noivos-presentes__total">{formatBRL(totalArrecadado)}</span>
+        </div>
+        <p className="noivos-presentes__aviso">
+          Confirmado pelo próprio convidado ao pagar via Pix — não há confirmação bancária automática.
+        </p>
+
+        {loadingPresentes ? (
+          <p className="noivos-admin__loading">Carregando...</p>
+        ) : presentes.length === 0 ? (
+          <p className="noivos-presentes__vazio">Nenhuma contribuição registrada ainda.</p>
+        ) : (
+          <div className="noivos-presentes__list">
+            {presentes.map((p) => {
+              const item = p.item_id ? itemsPorId.get(p.item_id) : undefined;
+              return (
+                <div key={p.id} className="noivos-presente">
+                  <div className="noivos-presente__foto">
+                    {item?.imagem_url ? (
+                      <img src={item.imagem_url} alt="" />
+                    ) : (
+                      <span>{item ? ENXOVAL_CATEGORIA_ICONE[item.categoria] : "🎁"}</span>
+                    )}
+                  </div>
+                  <div className="noivos-presente__info">
+                    <p className="noivos-presente__item">{p.item_nome}</p>
+                    <p className="noivos-presente__doador">De {p.nome_doador}</p>
+                  </div>
+                  <div className="noivos-presente__meta">
+                    <span className="noivos-presente__valor">{formatBRL(p.valor)}</span>
+                    <span className="noivos-presente__data">{formatData(p.created_at)}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       {editingItem && (
         <ItemEditModal
