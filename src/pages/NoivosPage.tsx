@@ -79,6 +79,35 @@ function AdminPanel() {
   const itemsPorId = useMemo(() => new Map(items.map((i) => [i.id, i])), [items]);
   const totalArrecadado = useMemo(() => presentes.reduce((sum, p) => sum + p.valor, 0), [presentes]);
 
+  const contribuicoesPorItem = useMemo(() => {
+    const map = new Map<string, { total: number; count: number }>();
+    for (const p of presentes) {
+      if (!p.item_id) continue;
+      const atual = map.get(p.item_id) ?? { total: 0, count: 0 };
+      map.set(p.item_id, { total: atual.total + p.valor, count: atual.count + 1 });
+    }
+    return map;
+  }, [presentes]);
+
+  const { totalMeta, itensCompletos } = useMemo(() => {
+    let meta = 0;
+    let completos = 0;
+    for (const item of items) {
+      if (item.status === "temos") continue;
+      if (item.preco_estimado) meta += item.preco_estimado;
+      const c = contribuicoesPorItem.get(item.id);
+      if (!c) continue;
+      const dividido = (item.cotas ?? 1) > 1;
+      const completo = dividido
+        ? c.count >= (item.cotas ?? 1)
+        : item.preco_estimado != null && c.total >= item.preco_estimado;
+      if (completo) completos += 1;
+    }
+    return { totalMeta: meta, itensCompletos: completos };
+  }, [items, contribuicoesPorItem]);
+
+  const pctGeral = totalMeta > 0 ? Math.min(100, Math.round((totalArrecadado / totalMeta) * 100)) : 0;
+
   const filtered = useMemo(() => {
     let list = items;
     if (filter !== "todos") list = list.filter((i) => i.status === filter);
@@ -124,6 +153,33 @@ function AdminPanel() {
         <h1>Painel dos Noivos</h1>
         <p>Gerencie o enxoval, itens e configurações do site.</p>
       </header>
+
+      <div className="noivos-hero-stat">
+        <span className="noivos-hero-stat__eyebrow">Total arrecadado</span>
+        <span className="noivos-hero-stat__valor">{formatBRL(totalArrecadado)}</span>
+        {totalMeta > 0 && (
+          <>
+            <div className="noivos-hero-stat__bar">
+              <div className="noivos-hero-stat__fill" style={{ width: `${pctGeral}%` }} />
+            </div>
+            <span className="noivos-hero-stat__label">de {formatBRL(totalMeta)} em metas ({pctGeral}%)</span>
+          </>
+        )}
+        <div className="noivos-hero-stat__grid">
+          <div className="noivos-hero-stat__mini">
+            <strong>{itensCompletos}</strong>
+            <span>itens completos</span>
+          </div>
+          <div className="noivos-hero-stat__mini">
+            <strong>{presentes.length}</strong>
+            <span>contribuições</span>
+          </div>
+          <div className="noivos-hero-stat__mini">
+            <strong>{stats.precisamos}</strong>
+            <span>ainda faltam</span>
+          </div>
+        </div>
+      </div>
 
       <div className="noivos-stats">
         <div className="noivos-stat">
@@ -255,11 +311,7 @@ function AdminPanel() {
               return (
                 <div key={p.id} className="noivos-presente">
                   <div className="noivos-presente__foto">
-                    {item?.imagem_url ? (
-                      <img src={item.imagem_url} alt="" />
-                    ) : (
-                      <span>{item ? ENXOVAL_CATEGORIA_ICONE[item.categoria] : "🎁"}</span>
-                    )}
+                    {item?.imagem_url && <img src={item.imagem_url} alt="" />}
                   </div>
                   <div className="noivos-presente__info">
                     <p className="noivos-presente__item">{p.item_nome}</p>

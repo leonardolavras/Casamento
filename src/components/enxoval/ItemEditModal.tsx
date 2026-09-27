@@ -26,6 +26,7 @@ export function ItemEditModal({ item, title = "Editar item", onSave, onClose }: 
   const [quantidade, setQuantidade] = useState(item?.quantidade ?? 1);
   const [prioridade, setPrioridade] = useState<EnxovalPrioridade>(item?.prioridade ?? "media");
   const [precoEstimado, setPrecoEstimado] = useState(item?.preco_estimado?.toString() ?? "");
+  const [cotas, setCotas] = useState(item?.cotas?.toString() ?? "");
   const [link, setLink] = useState(item?.link ?? "");
   const [imagemUrl, setImagemUrl] = useState(item?.imagem_url ?? "");
   const [observacoes, setObservacoes] = useState(item?.observacoes ?? "");
@@ -47,6 +48,7 @@ export function ItemEditModal({ item, title = "Editar item", onSave, onClose }: 
         quantidade,
         prioridade,
         preco_estimado: precoEstimado ? parseFloat(precoEstimado) : null,
+        cotas: cotas ? Math.max(2, parseInt(cotas, 10)) : null,
         link: link.trim() || null,
         imagem_url: imagemUrl.trim() || null,
         observacoes: observacoes.trim() || null,
@@ -111,6 +113,24 @@ export function ItemEditModal({ item, title = "Editar item", onSave, onClose }: 
               <input type="number" min={0} step="0.01" placeholder="R$" value={precoEstimado} onChange={(e) => setPrecoEstimado(e.target.value)} />
             </label>
           </div>
+
+          <label>
+            <span>Dividir em cotas (opcional)</span>
+            <input
+              type="number"
+              min={2}
+              placeholder="Ex: 22 — deixe vazio para presente único"
+              value={cotas}
+              onChange={(e) => setCotas(e.target.value)}
+            />
+          </label>
+          {cotas && parseInt(cotas, 10) >= 2 && (
+            <p className="enxoval-modal__hint">
+              {precoEstimado
+                ? `Cada convidado presenteia 1 cota de ${(parseFloat(precoEstimado) / parseInt(cotas, 10)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}.`
+                : "Defina o preço estimado para calcular o valor de cada cota."}
+            </p>
+          )}
 
           <label>
             <span>Link do produto</span>

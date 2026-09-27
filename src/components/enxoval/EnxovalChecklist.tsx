@@ -42,8 +42,17 @@ function GiftCard({
   const podePresentear = PIX_KEY || item.link;
   const tint = tintFor(item.categoria);
   const meta = item.preco_estimado;
-  const pct = meta ? Math.min(100, Math.round((arrecadado / meta) * 100)) : 0;
-  const completo = meta != null && arrecadado >= meta;
+
+  const dividido = (item.cotas ?? 1) > 1 && meta != null;
+  const valorCota = dividido ? meta! / item.cotas! : null;
+  const cotasPreenchidas = dividido ? Math.min(item.cotas!, contribuintes) : 0;
+
+  const pct = dividido
+    ? Math.round((cotasPreenchidas / item.cotas!) * 100)
+    : meta
+      ? Math.min(100, Math.round((arrecadado / meta) * 100))
+      : 0;
+  const completo = dividido ? cotasPreenchidas >= item.cotas! : meta != null && arrecadado >= meta;
 
   return (
     <div className={`gift-card gift-card--${tint} ${featured ? "gift-card--featured" : ""}`}>
@@ -51,7 +60,7 @@ function GiftCard({
         {item.imagem_url ? (
           <img src={item.imagem_url} alt={item.nome} loading="lazy" />
         ) : (
-          <span className="gift-card__icone">{ENXOVAL_CATEGORIA_ICONE[item.categoria]}</span>
+          <span className="gift-card__placeholder" aria-hidden="true" />
         )}
         {item.quantidade > 1 && <span className="gift-card__qty">{item.quantidade}x</span>}
         {completo && <span className="gift-card__completo">Presente completo! 🎉</span>}
@@ -60,23 +69,38 @@ function GiftCard({
         <span className="gift-card__cat">{item.categoria}</span>
         <p className="gift-card__nome">{item.nome}</p>
 
-        {meta ? (
+        {meta != null && (
+          <span className="gift-card__preco">
+            {formatBRL(dividido ? valorCota! : meta)}
+            {dividido && <span className="gift-card__preco-nota"> / cota</span>}
+          </span>
+        )}
+
+        {(dividido || arrecadado > 0) && (
           <div className="gift-card__progresso">
             <div className="gift-card__bar">
               <div className="gift-card__bar-fill" style={{ width: `${pct}%` }} />
             </div>
             <div className="gift-card__progresso-info">
-              <span>{formatBRL(arrecadado)}</span>
-              <span className="gift-card__meta">de {formatBRL(meta)}</span>
+              {dividido ? (
+                <span>{cotasPreenchidas} de {item.cotas} cotas preenchidas</span>
+              ) : (
+                <>
+                  <span>{formatBRL(arrecadado)}</span>
+                  <span className="gift-card__meta">de {formatBRL(meta!)}</span>
+                </>
+              )}
             </div>
           </div>
-        ) : (
+        )}
+
+        {meta == null && (
           <span className="gift-card__preco">
             {arrecadado > 0 ? `${formatBRL(arrecadado)} contribuídos` : "Valor a definir"}
           </span>
         )}
 
-        {contribuintes > 0 && (
+        {contribuintes > 0 && !dividido && (
           <span className="gift-card__contribuintes">
             {contribuintes === 1 ? "1 pessoa já contribuiu" : `${contribuintes} pessoas já contribuíram`}
           </span>
@@ -84,7 +108,7 @@ function GiftCard({
 
         {podePresentear && !completo && (
           <button type="button" className="gift-card__btn" onClick={() => onPresentear(item)}>
-            Presentear
+            {dividido ? "Presentear 1 cota" : "Presentear"}
           </button>
         )}
       </div>
@@ -109,16 +133,24 @@ export function EnxovalChecklist() {
     return map;
   }, [presentes]);
 
-  const { totalMeta, totalArrecadado } = useMemo(() => {
+  const { totalMeta, totalArrecadado, itensCompletos, totalContribuicoes } = useMemo(() => {
     let meta = 0;
     let arrecadado = 0;
+    let completos = 0;
     for (const item of precisamos) {
       if (item.preco_estimado) meta += item.preco_estimado;
       const c = contribuicoesPorItem.get(item.id);
-      if (c) arrecadado += c.total;
+      if (c) {
+        arrecadado += c.total;
+        const dividido = (item.cotas ?? 1) > 1;
+        const completo = dividido
+          ? c.count >= (item.cotas ?? 1)
+          : item.preco_estimado != null && c.total >= item.preco_estimado;
+        if (completo) completos += 1;
+      }
     }
-    return { totalMeta: meta, totalArrecadado: arrecadado };
-  }, [precisamos, contribuicoesPorItem]);
+    return { totalMeta: meta, totalArrecadado: arrecadado, itensCompletos: completos, totalContribuicoes: presentes.length };
+  }, [precisamos, contribuicoesPorItem, presentes.length]);
 
   const pctGeral = totalMeta > 0 ? Math.min(100, Math.round((totalArrecadado / totalMeta) * 100)) : 0;
 
@@ -186,6 +218,20 @@ export function EnxovalChecklist() {
                 <span className="enxoval-hero-stat__valor">{formatBRL(totalArrecadado)}</span>
                 <span className="enxoval-hero-stat__label">arrecadados de {formatBRL(totalMeta)}</span>
               </div>
+              <div className="enxoval-hero-stat__grid">
+                <div className="enxoval-hero-stat__mini">
+                  <strong>{pctGeral}%</strong>
+                  <span>da meta</span>
+                </div>
+                <div className="enxoval-hero-stat__mini">
+                  <strong>{itensCompletos}</strong>
+                  <span>{itensCompletos === 1 ? "item completo" : "itens completos"}</span>
+                </div>
+                <div className="enxoval-hero-stat__mini">
+                  <strong>{totalContribuicoes}</strong>
+                  <span>{totalContribuicoes === 1 ? "contribuição" : "contribuições"}</span>
+                </div>
+              </div>
             </div>
           )}
 
@@ -223,7 +269,11 @@ export function EnxovalChecklist() {
       {presenteando && (
         <PixModal
           itemNome={presenteando.nome}
-          valorSugerido={presenteando.preco_estimado}
+          valorSugerido={
+            (presenteando.cotas ?? 1) > 1 && presenteando.preco_estimado != null
+              ? presenteando.preco_estimado / presenteando.cotas!
+              : presenteando.preco_estimado
+          }
           onClose={() => setPresenteando(null)}
           onConfirm={handleConfirm}
         />
