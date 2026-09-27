@@ -6,7 +6,7 @@ create table if not exists public.enxoval_itens (
   nome text not null unique,
   categoria text not null default 'Outros',
   status text not null default 'precisamos'
-    check (status in ('temos', 'queremos', 'precisamos')),
+    check (status in ('temos', 'precisamos')),
   quantidade integer not null default 1,
   prioridade text not null default 'media'
     check (prioridade in ('baixa', 'media', 'alta')),

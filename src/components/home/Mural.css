@@ -92,7 +92,7 @@
 .recado-card--v0 .recado-card__nome { color: var(--accent); }
 .recado-card--v1 .recado-card__nome { color: var(--accent-dark); }
 .recado-card--v2 .recado-card__nome { color: var(--status-temos); }
-.recado-card--v3 .recado-card__nome { color: var(--status-queremos); }
+.recado-card--v3 .recado-card__nome { color: var(--gold); }
 
 .recado-card__msg {
   font-family: var(--font-serif);

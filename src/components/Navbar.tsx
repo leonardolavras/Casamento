@@ -28,14 +28,16 @@ export function Navbar() {
 
   const navClass = [
     "navbar",
+    open ? "navbar--open" : "",
     isHome && !scrolled && !open ? "navbar--transparent" : "",
-    scrolled ? "navbar--solid" : "",
+    scrolled && !open ? "navbar--solid" : "",
   ].filter(Boolean).join(" ");
 
   const linkClass = ({ isActive }: { isActive: boolean }) =>
     isActive ? "navbar__link navbar__link--active" : "navbar__link";
 
   return (
+    <>
     <nav className={navClass}>
       <NavLink to="/" className="navbar__brand" onClick={() => setOpen(false)}>
         <span className="navbar__monogram">
@@ -61,7 +63,10 @@ export function Navbar() {
       >
         <span /><span />
       </button>
+    </nav>
 
+      {/* Fora do <nav>: o backdrop-filter da barra "solid" vira containing block
+          de position:fixed e prendia o overlay na altura da barra. */}
       <div className={`navbar__mobile ${open ? "navbar__mobile--open" : ""}`}>
         <NavLink to="/" end className={linkClass} onClick={() => setOpen(false)}>Inicio</NavLink>
         <NavLink to="/galeria" className={linkClass} onClick={() => setOpen(false)}>Fotos</NavLink>
@@ -70,6 +75,6 @@ export function Navbar() {
         <NavLink to="/enxoval" className={linkClass} onClick={() => setOpen(false)}>Enxoval</NavLink>
         <NavLink to="/noivos" className={linkClass} onClick={() => setOpen(false)}>Para os Noivos</NavLink>
       </div>
-    </nav>
+    </>
   );
 }

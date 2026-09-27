@@ -1,7 +1,6 @@
 import { useState } from "react";
 import {
   ENXOVAL_CATEGORIAS,
-  ENXOVAL_CATEGORIA_ICONE,
   ENXOVAL_STATUS,
   ENXOVAL_STATUS_LABEL,
   type EnxovalCategoria,
@@ -10,6 +9,9 @@ import {
   type EnxovalPrioridade,
   type EnxovalStatus,
 } from "../../types/enxoval";
+import { uploadEnxovalFoto } from "../../lib/uploadEnxovalFoto";
+import { formatBRL, resumirPresente, rotuloPreco } from "../../lib/presente";
+import { GiftThumb } from "./GiftThumb";
 import "./Enxoval.css";
 
 interface ItemEditModalProps {
@@ -19,25 +21,62 @@ interface ItemEditModalProps {
   onClose: () => void;
 }
 
-export function ItemEditModal({ item, title = "Editar item", onSave, onClose }: ItemEditModalProps) {
+// Aceita "1.599,00", "1599,00", "1599.00" e "1.599" (ponto de milhar).
+function parsePreco(texto: string): number | null {
+  let t = texto.replace(/[R$\s]/g, "");
+  if (t.includes(",")) t = t.replace(/\./g, "").replace(",", ".");
+  else if (!/\.\d{1,2}$/.test(t)) t = t.replace(/\./g, "");
+  const n = parseFloat(t);
+  return Number.isFinite(n) && n > 0 ? Math.round(n * 100) / 100 : null;
+}
+
+function formatPrecoInput(valor: number | null | undefined): string {
+  return valor != null ? valor.toFixed(2).replace(".", ",") : "";
+}
+
+export function ItemEditModal({ item, title = "Editar presente", onSave, onClose }: ItemEditModalProps) {
   const [nome, setNome] = useState(item?.nome ?? "");
   const [categoria, setCategoria] = useState<EnxovalCategoria>(item?.categoria ?? "Cozinha");
   const [status, setStatus] = useState<EnxovalStatus>(item?.status ?? "precisamos");
   const [quantidade, setQuantidade] = useState(item?.quantidade ?? 1);
   const [prioridade, setPrioridade] = useState<EnxovalPrioridade>(item?.prioridade ?? "media");
-  const [precoEstimado, setPrecoEstimado] = useState(item?.preco_estimado?.toString() ?? "");
-  const [cotas, setCotas] = useState(item?.cotas?.toString() ?? "");
+  const [preco, setPreco] = useState(formatPrecoInput(item?.preco_estimado));
+  const [emCotas, setEmCotas] = useState((item?.cotas ?? 1) > 1);
+  const [cotas, setCotas] = useState(String(item?.cotas && item.cotas > 1 ? item.cotas : 10));
   const [link, setLink] = useState(item?.link ?? "");
   const [imagemUrl, setImagemUrl] = useState(item?.imagem_url ?? "");
   const [observacoes, setObservacoes] = useState(item?.observacoes ?? "");
+  const [maisOpcoes, setMaisOpcoes] = useState(false);
+  const [enviandoFoto, setEnviandoFoto] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const isNew = !item;
+  const precoNum = parsePreco(preco);
+  const cotasNum = Math.max(2, parseInt(cotas, 10) || 2);
+
+  const previa = resumirPresente(
+    { preco_estimado: precoNum, cotas: emCotas ? cotasNum : null } as EnxovalItem,
+    undefined,
+  );
+
+  async function handleFoto(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setEnviandoFoto(true);
+    setError(null);
+    try {
+      setImagemUrl(await uploadEnxovalFoto(file));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Falha ao enviar a foto");
+    }
+    setEnviandoFoto(false);
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!nome.trim() || saving) return;
+    if (!nome.trim() || saving || enviandoFoto) return;
     setSaving(true);
     setError(null);
     try {
@@ -47,8 +86,8 @@ export function ItemEditModal({ item, title = "Editar item", onSave, onClose }: 
         status,
         quantidade,
         prioridade,
-        preco_estimado: precoEstimado ? parseFloat(precoEstimado) : null,
-        cotas: cotas ? Math.max(2, parseInt(cotas, 10)) : null,
+        preco_estimado: precoNum,
+        cotas: emCotas ? cotasNum : null,
         link: link.trim() || null,
         imagem_url: imagemUrl.trim() || null,
         observacoes: observacoes.trim() || null,
@@ -61,27 +100,101 @@ export function ItemEditModal({ item, title = "Editar item", onSave, onClose }: 
 
   return (
     <div className="enxoval-modal-overlay" onClick={onClose}>
-      <div className="enxoval-modal" onClick={(e) => e.stopPropagation()}>
+      <div className="enxoval-modal" role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()}>
         <div className="enxoval-modal__header">
           <h3>{title}</h3>
-          <button type="button" className="enxoval-modal__close" onClick={onClose}>
+          <button type="button" className="enxoval-modal__close" onClick={onClose} aria-label="Fechar">
             ×
           </button>
         </div>
         <form className="enxoval-modal__form" onSubmit={handleSubmit}>
           {error && <p className="enxoval-modal__error">{error}</p>}
 
+          <div className="enxoval-modal__foto-row">
+            <label
+              className={`enxoval-modal__foto ${imagemUrl ? "enxoval-modal__foto--com-foto" : ""}`}
+              title={imagemUrl ? "Trocar foto" : "Adicionar foto"}
+            >
+              {enviandoFoto ? (
+                <span className="enxoval-modal__foto-status">Enviando…</span>
+              ) : imagemUrl ? (
+                <img src={imagemUrl} alt="" />
+              ) : (
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                  <circle cx="12" cy="13" r="4" />
+                </svg>
+              )}
+              <input type="file" accept="image/*" onChange={handleFoto} disabled={enviandoFoto} aria-label="Foto do presente" />
+            </label>
+            <label>
+              <span>Nome do presente</span>
+              <input
+                type="text"
+                value={nome}
+                onChange={(e) => setNome(e.target.value)}
+                placeholder="Ex: Jantar romântico"
+                autoFocus={isNew}
+              />
+            </label>
+          </div>
+          {imagemUrl && !enviandoFoto && (
+            <div className="enxoval-modal__foto-acoes">
+              <button type="button" onClick={() => setImagemUrl("")}>Remover foto</button>
+            </div>
+          )}
+
           <label>
-            <span>Nome</span>
-            <input type="text" value={nome} onChange={(e) => setNome(e.target.value)} autoFocus={isNew} />
+            <span>Valor total (R$)</span>
+            <input
+              type="text"
+              inputMode="decimal"
+              placeholder="0,00"
+              value={preco}
+              onChange={(e) => setPreco(e.target.value)}
+            />
           </label>
+
+          <div>
+            <span className="enxoval-modal__label">Como os convidados presenteiam</span>
+            <div className="enxoval-modal__tipo" role="group" style={{ marginTop: "0.3rem" }}>
+              <button type="button" aria-pressed={!emCotas} onClick={() => setEmCotas(false)}>
+                Presente único
+              </button>
+              <button type="button" aria-pressed={emCotas} onClick={() => setEmCotas(true)}>
+                Dividir em cotas
+              </button>
+            </div>
+          </div>
+
+          {emCotas && (
+            <>
+              <label>
+                <span>Número de cotas</span>
+                <input type="number" min={2} max={200} value={cotas} onChange={(e) => setCotas(e.target.value)} />
+              </label>
+              <p className="enxoval-modal__hint">
+                {previa.valorPresente != null
+                  ? `Cada convidado presenteia 1 cota de ${formatBRL(previa.valorPresente)}.`
+                  : "Defina o valor total para calcular a cota."}
+              </p>
+            </>
+          )}
+
+          <div className="enxoval-modal__preview-linha" aria-label="Prévia na lista">
+            <GiftThumb nome={nome || "?"} src={imagemUrl || null} />
+            <div>
+              <p className="enxoval-modal__preview-nome">{nome || "Nome do presente"}</p>
+              <p className="enxoval-modal__preview-meta">{rotuloPreco(previa)}</p>
+            </div>
+          </div>
 
           <div className="enxoval-modal__row">
             <label>
               <span>Categoria</span>
               <select value={categoria} onChange={(e) => setCategoria(e.target.value as EnxovalCategoria)}>
                 {ENXOVAL_CATEGORIAS.map((c) => (
-                  <option key={c} value={c}>{ENXOVAL_CATEGORIA_ICONE[c]} {c}</option>
+                  <option key={c} value={c}>{c}</option>
                 ))}
               </select>
             </label>
@@ -95,74 +208,47 @@ export function ItemEditModal({ item, title = "Editar item", onSave, onClose }: 
             </label>
           </div>
 
-          <div className="enxoval-modal__row">
-            <label>
-              <span>Quantidade</span>
-              <input type="number" min={1} value={quantidade} onChange={(e) => setQuantidade(Number(e.target.value) || 1)} />
-            </label>
-            <label>
-              <span>Prioridade</span>
-              <select value={prioridade} onChange={(e) => setPrioridade(e.target.value as EnxovalPrioridade)}>
-                <option value="baixa">Baixa</option>
-                <option value="media">Média</option>
-                <option value="alta">Alta</option>
-              </select>
-            </label>
-            <label>
-              <span>Preço est.</span>
-              <input type="number" min={0} step="0.01" placeholder="R$" value={precoEstimado} onChange={(e) => setPrecoEstimado(e.target.value)} />
-            </label>
-          </div>
-
-          <label>
-            <span>Dividir em cotas (opcional)</span>
-            <input
-              type="number"
-              min={2}
-              placeholder="Ex: 22 — deixe vazio para presente único"
-              value={cotas}
-              onChange={(e) => setCotas(e.target.value)}
-            />
-          </label>
-          {cotas && parseInt(cotas, 10) >= 2 && (
-            <p className="enxoval-modal__hint">
-              {precoEstimado
-                ? `Cada convidado presenteia 1 cota de ${(parseFloat(precoEstimado) / parseInt(cotas, 10)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}.`
-                : "Defina o preço estimado para calcular o valor de cada cota."}
-            </p>
+          {maisOpcoes ? (
+            <>
+              <div className="enxoval-modal__row">
+                <label>
+                  <span>Quantidade</span>
+                  <input type="number" min={1} value={quantidade} onChange={(e) => setQuantidade(Number(e.target.value) || 1)} />
+                </label>
+                <label>
+                  <span>Prioridade</span>
+                  <select value={prioridade} onChange={(e) => setPrioridade(e.target.value as EnxovalPrioridade)}>
+                    <option value="baixa">Baixa</option>
+                    <option value="media">Média</option>
+                    <option value="alta">Alta</option>
+                  </select>
+                </label>
+              </div>
+              <label>
+                <span>Link do produto (opcional)</span>
+                <input type="url" placeholder="https://..." value={link} onChange={(e) => setLink(e.target.value)} />
+              </label>
+              <label>
+                <span>URL da foto (opcional, se não enviar arquivo)</span>
+                <input type="url" placeholder="https://..." value={imagemUrl} onChange={(e) => setImagemUrl(e.target.value)} />
+              </label>
+              <label>
+                <span>Observações</span>
+                <textarea rows={2} value={observacoes} onChange={(e) => setObservacoes(e.target.value)} />
+              </label>
+            </>
+          ) : (
+            <button type="button" className="enxoval-modal__mais" onClick={() => setMaisOpcoes(true)}>
+              + Mais opções (quantidade, link, observações)
+            </button>
           )}
-
-          <label>
-            <span>Link do produto</span>
-            <input type="url" placeholder="https://..." value={link} onChange={(e) => setLink(e.target.value)} />
-          </label>
-
-          <label>
-            <span>URL da imagem</span>
-            <input type="url" placeholder="https://..." value={imagemUrl} onChange={(e) => setImagemUrl(e.target.value)} />
-          </label>
-
-          {imagemUrl.trim() && (
-            <div className="enxoval-modal__preview">
-              <img
-                src={imagemUrl}
-                alt="Preview"
-                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-              />
-            </div>
-          )}
-
-          <label>
-            <span>Observações</span>
-            <textarea rows={2} value={observacoes} onChange={(e) => setObservacoes(e.target.value)} />
-          </label>
 
           <div className="enxoval-modal__actions">
             <button type="button" className="enxoval-modal__cancel" onClick={onClose}>
               Cancelar
             </button>
-            <button type="submit" className="enxoval-modal__save" disabled={saving || !nome.trim()}>
-              {saving ? "Salvando..." : isNew ? "Adicionar" : "Salvar"}
+            <button type="submit" className="enxoval-modal__save" disabled={saving || enviandoFoto || !nome.trim()}>
+              {saving ? "Salvando..." : isNew ? "Criar presente" : "Salvar"}
             </button>
           </div>
         </form>

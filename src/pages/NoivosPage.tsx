@@ -2,20 +2,18 @@ import { useState, useMemo } from "react";
 import { useEnxovalItems } from "../hooks/useEnxovalItems";
 import { useEnxovalPresentes } from "../hooks/useEnxovalPresentes";
 import {
-  ENXOVAL_CATEGORIA_ICONE,
   ENXOVAL_STATUS,
-  ENXOVAL_STATUS_LABEL_CURTO,
+  ENXOVAL_STATUS_LABEL,
   type EnxovalItem,
   type EnxovalItemInput,
   type EnxovalStatus,
 } from "../types/enxoval";
 import { COUPLE } from "../config/site";
+import { agruparContribuicoes, formatBRL, resumirPresente, rotuloPreco } from "../lib/presente";
 import { ItemEditModal } from "../components/enxoval/ItemEditModal";
+import { GiftThumb } from "../components/enxoval/GiftThumb";
+import "../components/enxoval/Enxoval.css";
 import "./NoivosPage.css";
-
-function formatBRL(valor: number): string {
-  return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-}
 
 function formatData(iso: string): string {
   return new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
@@ -68,26 +66,20 @@ export function NoivosPage() {
   return <AdminPanel />;
 }
 
+type Aba = "presentes" | "recebidos";
+
 function AdminPanel() {
   const { items, loading, error, addItem, updateItem, removeItem } = useEnxovalItems();
   const { presentes, loading: loadingPresentes } = useEnxovalPresentes();
+  const [aba, setAba] = useState<Aba>("presentes");
   const [filter, setFilter] = useState<EnxovalStatus | "todos">("todos");
   const [search, setSearch] = useState("");
   const [editingItem, setEditingItem] = useState<EnxovalItem | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
 
   const itemsPorId = useMemo(() => new Map(items.map((i) => [i.id, i])), [items]);
+  const contribuicoes = useMemo(() => agruparContribuicoes(presentes), [presentes]);
   const totalArrecadado = useMemo(() => presentes.reduce((sum, p) => sum + p.valor, 0), [presentes]);
-
-  const contribuicoesPorItem = useMemo(() => {
-    const map = new Map<string, { total: number; count: number }>();
-    for (const p of presentes) {
-      if (!p.item_id) continue;
-      const atual = map.get(p.item_id) ?? { total: 0, count: 0 };
-      map.set(p.item_id, { total: atual.total + p.valor, count: atual.count + 1 });
-    }
-    return map;
-  }, [presentes]);
 
   const { totalMeta, itensCompletos } = useMemo(() => {
     let meta = 0;
@@ -95,18 +87,18 @@ function AdminPanel() {
     for (const item of items) {
       if (item.status === "temos") continue;
       if (item.preco_estimado) meta += item.preco_estimado;
-      const c = contribuicoesPorItem.get(item.id);
-      if (!c) continue;
-      const dividido = (item.cotas ?? 1) > 1;
-      const completo = dividido
-        ? c.count >= (item.cotas ?? 1)
-        : item.preco_estimado != null && c.total >= item.preco_estimado;
-      if (completo) completos += 1;
+      if (resumirPresente(item, contribuicoes.get(item.id)).completo) completos += 1;
     }
     return { totalMeta: meta, itensCompletos: completos };
-  }, [items, contribuicoesPorItem]);
+  }, [items, contribuicoes]);
 
   const pctGeral = totalMeta > 0 ? Math.min(100, Math.round((totalArrecadado / totalMeta) * 100)) : 0;
+
+  const contagem = useMemo(() => ({
+    todos: items.length,
+    precisamos: items.filter((i) => i.status === "precisamos").length,
+    temos: items.filter((i) => i.status === "temos").length,
+  }), [items]);
 
   const filtered = useMemo(() => {
     let list = items;
@@ -117,13 +109,6 @@ function AdminPanel() {
     }
     return list;
   }, [items, filter, search]);
-
-  const stats = useMemo(() => ({
-    total: items.length,
-    temos: items.filter((i) => i.status === "temos").length,
-    queremos: items.filter((i) => i.status === "queremos").length,
-    precisamos: items.filter((i) => i.status === "precisamos").length,
-  }), [items]);
 
   async function handleSaveEdit(data: Partial<EnxovalItemInput>) {
     if (!editingItem) return;
@@ -136,22 +121,20 @@ function AdminPanel() {
     setShowAddForm(false);
   }
 
-  async function handleDelete(id: string) {
-    await removeItem(id);
+  async function handleDelete(item: EnxovalItem) {
+    if (!window.confirm(`Excluir "${item.nome}" da lista?`)) return;
+    await removeItem(item.id);
   }
 
-  async function handleStatusToggle(id: string, current: EnxovalStatus) {
-    const order: EnxovalStatus[] = ["precisamos", "queremos", "temos"];
-    const idx = order.indexOf(current);
-    const next = order[(idx + 1) % order.length];
-    await updateItem(id, { status: next });
+  async function handleStatusToggle(item: EnxovalItem) {
+    await updateItem(item.id, { status: item.status === "temos" ? "precisamos" : "temos" });
   }
 
   return (
     <section className="noivos-admin">
       <header className="noivos-admin__header">
+        <span className="enxoval__eyebrow">Só vocês veem isso</span>
         <h1>Painel dos Noivos</h1>
-        <p>Gerencie o enxoval, itens e configurações do site.</p>
       </header>
 
       <div className="noivos-hero-stat">
@@ -162,171 +145,164 @@ function AdminPanel() {
             <div className="noivos-hero-stat__bar">
               <div className="noivos-hero-stat__fill" style={{ width: `${pctGeral}%` }} />
             </div>
-            <span className="noivos-hero-stat__label">de {formatBRL(totalMeta)} em metas ({pctGeral}%)</span>
+            <span className="noivos-hero-stat__label">{pctGeral}% de {formatBRL(totalMeta)} da lista</span>
           </>
         )}
         <div className="noivos-hero-stat__grid">
-          <div className="noivos-hero-stat__mini">
-            <strong>{itensCompletos}</strong>
-            <span>itens completos</span>
-          </div>
           <div className="noivos-hero-stat__mini">
             <strong>{presentes.length}</strong>
             <span>contribuições</span>
           </div>
           <div className="noivos-hero-stat__mini">
-            <strong>{stats.precisamos}</strong>
-            <span>ainda faltam</span>
+            <strong>{itensCompletos}</strong>
+            <span>completos</span>
+          </div>
+          <div className="noivos-hero-stat__mini">
+            <strong>{contagem.precisamos - itensCompletos}</strong>
+            <span>faltam</span>
           </div>
         </div>
       </div>
 
-      <div className="noivos-stats">
-        <div className="noivos-stat">
-          <strong>{stats.total}</strong>
-          <span>Total</span>
-        </div>
-        {ENXOVAL_STATUS.map((s) => (
-          <div key={s} className={`noivos-stat noivos-stat--${s}`}>
-            <strong>{stats[s]}</strong>
-            <span>{ENXOVAL_STATUS_LABEL_CURTO[s]}</span>
-          </div>
-        ))}
-      </div>
-
-      {error && <p className="noivos-admin__erro">Erro: {error}</p>}
-
-      <div className="noivos-toolbar">
-        <input
-          type="text"
-          placeholder="Buscar itens..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="noivos-toolbar__search"
-        />
-        <div className="noivos-toolbar__filters">
-          <button
-            type="button"
-            className={`noivos-toolbar__filter ${filter === "todos" ? "noivos-toolbar__filter--active" : ""}`}
-            onClick={() => setFilter("todos")}
-          >
-            Todos
-          </button>
-          {ENXOVAL_STATUS.map((s) => (
-            <button
-              key={s}
-              type="button"
-              className={`noivos-toolbar__filter ${filter === s ? "noivos-toolbar__filter--active" : ""}`}
-              onClick={() => setFilter(s)}
-            >
-              {ENXOVAL_STATUS_LABEL_CURTO[s]}
-            </button>
-          ))}
-        </div>
-        <button
-          type="button"
-          className="noivos-toolbar__add"
-          onClick={() => setShowAddForm(true)}
-        >
-          + Novo item
+      <div className="noivos-tabs" role="tablist">
+        <button type="button" role="tab" aria-selected={aba === "presentes"} onClick={() => setAba("presentes")}>
+          Presentes
+        </button>
+        <button type="button" role="tab" aria-selected={aba === "recebidos"} onClick={() => setAba("recebidos")}>
+          Recebidos {presentes.length > 0 && <span>{presentes.length}</span>}
         </button>
       </div>
 
-      {loading ? (
-        <p className="noivos-admin__loading">Carregando...</p>
-      ) : (
-        <div className="noivos-table-wrap">
-          <table className="noivos-table">
-            <thead>
-              <tr>
-                <th>Item</th>
-                <th>Categoria</th>
-                <th>Status</th>
-                <th>Qtd</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody>
+      {error && <p className="enxoval__erro">Erro: {error}</p>}
+
+      {aba === "presentes" ? (
+        <>
+          <div className="noivos-toolbar">
+            <input
+              type="search"
+              placeholder="Buscar presente ou categoria…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="noivos-toolbar__search"
+            />
+            <div className="gift-chips gift-chips--estatico">
+              <button
+                type="button"
+                className={`gift-chip ${filter === "todos" ? "gift-chip--ativo" : ""}`}
+                onClick={() => setFilter("todos")}
+              >
+                Todos <span>{contagem.todos}</span>
+              </button>
+              {ENXOVAL_STATUS.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  className={`gift-chip ${filter === s ? "gift-chip--ativo" : ""}`}
+                  onClick={() => setFilter(s)}
+                >
+                  {ENXOVAL_STATUS_LABEL[s]} <span>{contagem[s]}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {loading ? (
+            <p className="enxoval__loading">Carregando...</p>
+          ) : (
+            <ul className="gift-list">
+              <li>
+                <button type="button" className="gift-row gift-row--criar" onClick={() => setShowAddForm(true)}>
+                  <span className="gift-row__plus" aria-hidden="true">+</span>
+                  <span>Criar um presente</span>
+                </button>
+              </li>
+
               {filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="noivos-table__empty">Nenhum item encontrado</td>
-                </tr>
+                <li className="gift-row gift-row--vazio">Nenhum presente encontrado</li>
               ) : (
-                filtered.map((item) => (
-                  <tr key={item.id}>
-                    <td className="noivos-table__nome">
-                      {item.imagem_url && (
-                        <img src={item.imagem_url} alt="" className="noivos-table__thumb" />
-                      )}
-                      <span>{item.nome}</span>
-                    </td>
-                    <td>
-                      <span className="noivos-table__cat">
-                        {ENXOVAL_CATEGORIA_ICONE[item.categoria]} {item.categoria}
-                      </span>
-                    </td>
-                    <td>
+                filtered.map((item) => {
+                  const resumo = resumirPresente(item, contribuicoes.get(item.id));
+                  return (
+                    <li key={item.id} className="gift-row gift-row--admin">
                       <button
                         type="button"
-                        className={`noivos-table__status noivos-table__status--${item.status}`}
-                        onClick={() => handleStatusToggle(item.id, item.status)}
+                        className="gift-row__main"
+                        onClick={() => setEditingItem(item)}
+                        aria-label={`Editar ${item.nome}`}
                       >
-                        {ENXOVAL_STATUS_LABEL_CURTO[item.status]}
+                        <GiftThumb nome={item.nome} src={item.imagem_url} />
+                        <span className="gift-row__info">
+                          <span className="gift-row__nome">
+                            {item.nome}
+                            {item.quantidade > 1 && <span className="gift-row__qtd">{item.quantidade} un.</span>}
+                          </span>
+                          <span className="gift-row__meta">
+                            {rotuloPreco(resumo)} · {item.categoria}
+                          </span>
+                          {resumo.dividido && resumo.cotasPreenchidas > 0 && (
+                            <span className="gift-row__meta gift-row__meta--destaque">
+                              {resumo.cotasPreenchidas}/{resumo.totalCotas} cotas presenteadas
+                            </span>
+                          )}
+                          {!resumo.dividido && resumo.completo && (
+                            <span className="gift-row__meta gift-row__meta--destaque">Presenteado</span>
+                          )}
+                        </span>
                       </button>
-                    </td>
-                    <td className="noivos-table__qty">{item.quantidade}</td>
-                    <td className="noivos-table__actions">
-                      <button type="button" onClick={() => setEditingItem(item)} title="Editar">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                      <button
+                        type="button"
+                        className={`status-pill status-pill--${item.status}`}
+                        onClick={() => handleStatusToggle(item)}
+                        title="Alternar entre Precisamos e Já temos"
+                      >
+                        {ENXOVAL_STATUS_LABEL[item.status]}
                       </button>
-                      <button type="button" onClick={() => handleDelete(item.id)} title="Excluir" className="noivos-table__del">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                      <button
+                        type="button"
+                        className="gift-row__del"
+                        onClick={() => handleDelete(item)}
+                        aria-label={`Excluir ${item.nome}`}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                       </button>
-                    </td>
-                  </tr>
-                ))
+                    </li>
+                  );
+                })
               )}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      <div className="noivos-presentes">
-        <div className="noivos-presentes__header">
-          <h2>Presentes recebidos</h2>
-          <span className="noivos-presentes__total">{formatBRL(totalArrecadado)}</span>
-        </div>
-        <p className="noivos-presentes__aviso">
-          Confirmado pelo próprio convidado ao pagar via Pix — não há confirmação bancária automática.
-        </p>
-
-        {loadingPresentes ? (
-          <p className="noivos-admin__loading">Carregando...</p>
-        ) : presentes.length === 0 ? (
-          <p className="noivos-presentes__vazio">Nenhuma contribuição registrada ainda.</p>
-        ) : (
-          <div className="noivos-presentes__list">
-            {presentes.map((p) => {
-              const item = p.item_id ? itemsPorId.get(p.item_id) : undefined;
-              return (
-                <div key={p.id} className="noivos-presente">
-                  <div className="noivos-presente__foto">
-                    {item?.imagem_url && <img src={item.imagem_url} alt="" />}
-                  </div>
-                  <div className="noivos-presente__info">
-                    <p className="noivos-presente__item">{p.item_nome}</p>
-                    <p className="noivos-presente__doador">De {p.nome_doador}</p>
-                  </div>
-                  <div className="noivos-presente__meta">
+            </ul>
+          )}
+        </>
+      ) : (
+        <>
+          <p className="noivos-presentes__aviso">
+            Confirmado pelo próprio convidado ao pagar via Pix — confira no extrato do banco.
+          </p>
+          {loadingPresentes ? (
+            <p className="enxoval__loading">Carregando...</p>
+          ) : presentes.length === 0 ? (
+            <p className="enxoval-section__vazio">Nenhuma contribuição registrada ainda.</p>
+          ) : (
+            <ul className="gift-list">
+              {presentes.map((p) => {
+                const item = p.item_id ? itemsPorId.get(p.item_id) : undefined;
+                return (
+                  <li key={p.id} className="gift-row">
+                    <GiftThumb nome={p.item_nome} src={item?.imagem_url ?? null} />
+                    <div className="gift-row__info">
+                      <p className="gift-row__nome">{p.item_nome}</p>
+                      <p className="gift-row__meta">
+                        De <strong>{p.nome_doador}</strong> · {formatData(p.created_at)}
+                      </p>
+                      {p.mensagem && <p className="gift-row__msg">“{p.mensagem}”</p>}
+                    </div>
                     <span className="noivos-presente__valor">{formatBRL(p.valor)}</span>
-                    <span className="noivos-presente__data">{formatData(p.created_at)}</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </>
+      )}
 
       {editingItem && (
         <ItemEditModal
@@ -339,7 +315,7 @@ function AdminPanel() {
       {showAddForm && (
         <ItemEditModal
           item={null}
-          title="Novo item"
+          title="Criar um presente"
           onSave={handleAdd}
           onClose={() => setShowAddForm(false)}
         />
