@@ -63,6 +63,7 @@ async function validarUrl(bruta: string): Promise<URL> {
   }
   const host = url.hostname.replace(/^\[|\]$/g, "");
   if (isIP(host)) throw new ErroFoto(400, "Use o link da loja.");
+  url.hash = "";
 
   let enderecos: { address: string }[];
   try {
@@ -238,14 +239,122 @@ function respostaErro(status: number, erro: string): Response {
   return Response.json({ erro }, { status, headers: { "cache-control": "no-store" } });
 }
 
+// ---------- Mercado Livre ----------
+// O ML bloqueia leitura da página vinda de servidores (Vercel/AWS) com uma tela
+// de verificação, então pra links dele a foto vem da API oficial, que só
+// precisa do código do anúncio (MLB123…) ou do produto de catálogo (/p/MLB…).
+
+const API_ML = "https://api.mercadolibre.com";
+
+export function idsMercadoLivre(link: string): { anuncios: string[]; produto: string | null } | null {
+  let host: string;
+  try {
+    host = new URL(link).hostname.toLowerCase();
+  } catch {
+    return null;
+  }
+  if (!/(^|\.)mercadoli(vre|bre)\.com(\.[a-z]{2})?$/.test(host)) return null;
+
+  const produto = link.match(/\/p\/(MLB\d{5,})/i)?.[1].toUpperCase() ?? null;
+  const anuncios = new Set<string>();
+  // wid=MLB…, item_id:MLB…, e caminho de anúncio /MLB-123456-nome
+  for (const m of link.matchAll(/(?:wid=|item_id(?::|%3A)|(?<!\/p)\/)(MLB-?\d{5,})/gi)) {
+    anuncios.add(m[1].replace("-", "").toUpperCase());
+  }
+  if (produto) anuncios.delete(produto);
+  return { anuncios: [...anuncios], produto };
+}
+
+async function lerJson(url: string): Promise<unknown> {
+  const { res } = await buscar(url, "application/json");
+  if (!res.ok) {
+    await res.body?.cancel();
+    return null;
+  }
+  try {
+    return JSON.parse(new TextDecoder().decode(await lerLimitado(res, 1_000_000)));
+  } catch {
+    return null;
+  }
+}
+
+function urlsDeFotos(json: unknown): string[] {
+  if (!json || typeof json !== "object") return [];
+  const obj = json as { pictures?: { secure_url?: string; url?: string }[]; thumbnail?: string };
+  const urls = (obj.pictures ?? []).map((p) => p.secure_url ?? p.url).filter((u): u is string => Boolean(u));
+  // thumbnail do ML termina em -I (pequena); -O é a original
+  if (obj.thumbnail) urls.push(obj.thumbnail.replace(/-I\.(jpe?g|webp|png)$/i, "-O.$1"));
+  return urls.map((u) => u.replace(/^http:\/\//, "https://"));
+}
+
+async function fotosMercadoLivre(ids: { anuncios: string[]; produto: string | null }): Promise<string[]> {
+  const fotos: string[] = [];
+  for (const id of ids.anuncios.slice(0, 2)) {
+    fotos.push(...urlsDeFotos(await lerJson(`${API_ML}/items/${id}`).catch(() => null)));
+    if (fotos.length) return fotos;
+  }
+  if (ids.produto) fotos.push(...urlsDeFotos(await lerJson(`${API_ML}/products/${ids.produto}`).catch(() => null)));
+  return fotos;
+}
+
+async function baixarPrimeira(candidatas: string[]): Promise<Response | null> {
+  for (const candidata of candidatas.slice(0, 4)) {
+    try {
+      const img = await buscar(candidata, "image/avif,image/webp,image/*;q=0.8");
+      const tipo = img.res.ok ? tipoImagem(img.res) : null;
+      if (!tipo) {
+        await img.res.body?.cancel();
+        continue;
+      }
+      return respostaImagem(await lerLimitado(img.res, MAX_IMAGEM), tipo);
+    } catch {
+      // tenta a próxima candidata
+    }
+  }
+  return null;
+}
+
 export async function GET(request: Request): Promise<Response> {
   const link = new URL(request.url).searchParams.get("url")?.trim();
   if (!link) return respostaErro(400, "Cole o link do produto.");
 
   try {
+    await validarUrl(link);
+
+    const temIds = (ids: ReturnType<typeof idsMercadoLivre>) => Boolean(ids && (ids.anuncios.length || ids.produto));
+    const tentarApiMl = async (ids: ReturnType<typeof idsMercadoLivre>) => {
+      if (!ids || !temIds(ids)) return null;
+      const fotos = await fotosMercadoLivre(ids);
+      return fotos.length ? baixarPrimeira(fotos) : null;
+    };
+
+    let ml = idsMercadoLivre(link);
+    const daApi = await tentarApiMl(ml);
+    if (daApi) return daApi;
+
     const pagina = await buscar(link, "text/html,application/xhtml+xml,image/*;q=0.8,*/*;q=0.5");
+
+    // link curto de compartilhamento (mercadolivre.com/sec/…): o código só aparece depois do redirect
+    if (!temIds(ml)) {
+      const final = idsMercadoLivre(pagina.url.toString());
+      if (temIds(final)) {
+        ml = final;
+        const imagem = await tentarApiMl(final);
+        if (imagem) {
+          await pagina.res.body?.cancel();
+          return imagem;
+        }
+      }
+    }
+
     if (!pagina.res.ok) {
-      throw new ErroFoto(502, `A loja não deixou abrir a página (erro ${pagina.res.status}). Tente outro link ou envie a foto.`);
+      await pagina.res.body?.cancel();
+      throw new ErroFoto(
+        502,
+        ml
+          ? "O Mercado Livre bloqueou a busca automática desse link. Envie a foto manualmente (um print do anúncio serve)."
+          : `A loja não deixou abrir a página (erro ${pagina.res.status}). Tente outro link ou envie a foto.`,
+      );
     }
 
     // o link já é a própria imagem
@@ -254,21 +363,17 @@ export async function GET(request: Request): Promise<Response> {
 
     const html = new TextDecoder().decode(await lerLimitado(pagina.res, MAX_HTML));
     const candidatas = extrairImagens(html, pagina.url);
-    if (candidatas.length === 0) throw new ErroFoto(404, "Não achei a foto nessa página. Envie a foto manualmente.");
-
-    for (const candidata of candidatas.slice(0, 4)) {
-      try {
-        const img = await buscar(candidata, "image/avif,image/webp,image/*;q=0.8");
-        const tipo = img.res.ok ? tipoImagem(img.res) : null;
-        if (!tipo) {
-          await img.res.body?.cancel();
-          continue;
-        }
-        return respostaImagem(await lerLimitado(img.res, MAX_IMAGEM), tipo);
-      } catch {
-        // tenta a próxima candidata
-      }
+    if (candidatas.length === 0) {
+      throw new ErroFoto(
+        404,
+        ml
+          ? "O Mercado Livre bloqueou a busca automática desse link. Envie a foto manualmente (um print do anúncio serve)."
+          : "Não achei a foto nessa página. Envie a foto manualmente.",
+      );
     }
+
+    const imagem = await baixarPrimeira(candidatas);
+    if (imagem) return imagem;
     throw new ErroFoto(502, "Achei a foto, mas não consegui baixar. Envie a foto manualmente.");
   } catch (err) {
     if (err instanceof ErroFoto) return respostaErro(err.status, err.message);

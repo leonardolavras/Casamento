@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
   ENXOVAL_CATEGORIAS,
@@ -53,6 +53,9 @@ export function ItemEditModal({ item, title = "Editar presente", onSave, onClose
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // o link que já veio salvo não dispara busca ao abrir a edição
+  const ultimoLinkBuscado = useRef((item?.link ?? "").trim());
+
   const isNew = !item;
   const precoNum = parsePreco(preco);
 
@@ -73,6 +76,7 @@ export function ItemEditModal({ item, title = "Editar presente", onSave, onClose
   // Baixa a foto do anúncio e guarda uma cópia no Storage, pra não depender da loja.
   async function buscarFotoDoLink(url: string) {
     if (!pareceLink(url) || fotoStatus) return;
+    ultimoLinkBuscado.current = url.trim();
     setFotoStatus("buscando");
     setError(null);
     try {
@@ -83,10 +87,16 @@ export function ItemEditModal({ item, title = "Editar presente", onSave, onClose
     setFotoStatus(null);
   }
 
-  function handleColarLink(e: React.ClipboardEvent<HTMLInputElement>) {
-    const colado = e.clipboardData.getData("text").trim();
-    if (!imagemUrl && pareceLink(colado)) void buscarFotoDoLink(colado);
-  }
+  // Busca sozinha quando aparece um link novo no campo. Não dá pra depender do
+  // evento "paste": o atalho de área de transferência do teclado do Android
+  // insere o texto sem disparar paste.
+  useEffect(() => {
+    const url = link.trim();
+    if (!pareceLink(url) || url === ultimoLinkBuscado.current) return;
+    const t = setTimeout(() => void buscarFotoDoLink(url), 600);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- só deve reagir à mudança do link
+  }, [link]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -166,7 +176,6 @@ export function ItemEditModal({ item, title = "Editar presente", onSave, onClose
                 placeholder="Cole o link do Mercado Livre, Amazon, Magalu…"
                 value={link}
                 onChange={(e) => setLink(e.target.value)}
-                onPaste={handleColarLink}
               />
               <button
                 type="button"
