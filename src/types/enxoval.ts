@@ -56,7 +56,9 @@ export type EnxovalPresente = {
   valor: number;
   nome_doador: string;
   mensagem: string | null;
+  /** marcado pelos noivos ao conferir o Pix no extrato; ausente se a coluna ainda não foi criada */
+  confirmado?: boolean;
   created_at: string;
 };
 
-export type EnxovalPresenteInput = Omit<EnxovalPresente, "id" | "created_at">;
+export type EnxovalPresenteInput = Omit<EnxovalPresente, "id" | "created_at" | "confirmado">;

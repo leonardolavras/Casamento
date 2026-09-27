@@ -6,6 +6,7 @@ interface UseEnxovalPresentesResult {
   presentes: EnxovalPresente[];
   loading: boolean;
   registrar: (input: EnxovalPresenteInput) => Promise<void>;
+  confirmar: (id: string, confirmado: boolean) => Promise<void>;
 }
 
 export function useEnxovalPresentes(): UseEnxovalPresentesResult {
@@ -43,6 +44,14 @@ export function useEnxovalPresentes(): UseEnxovalPresentesResult {
           });
         },
       )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "enxoval_presentes" },
+        (payload) => {
+          const atualizado = payload.new as EnxovalPresente;
+          setPresentes((prev) => prev.map((p) => (p.id === atualizado.id ? atualizado : p)));
+        },
+      )
       .subscribe();
 
     return () => {
@@ -56,5 +65,20 @@ export function useEnxovalPresentes(): UseEnxovalPresentesResult {
     if (error) throw new Error(error.message);
   }, []);
 
-  return { presentes, loading, registrar };
+  const confirmar = useCallback(async (id: string, confirmado: boolean) => {
+    if (!isSupabaseConfigured) throw new Error("Supabase não configurado.");
+    // otimista: o botão responde na hora; desfaz se o banco recusar
+    setPresentes((prev) => prev.map((p) => (p.id === id ? { ...p, confirmado } : p)));
+    const { error } = await supabase.from("enxoval_presentes").update({ confirmado }).eq("id", id);
+    if (error) {
+      setPresentes((prev) => prev.map((p) => (p.id === id ? { ...p, confirmado: !confirmado } : p)));
+      throw new Error(
+        /confirmado/.test(error.message)
+          ? "Falta criar a coluna no banco: rode o arquivo supabase/add-confirmado.sql no Supabase."
+          : error.message,
+      );
+    }
+  }, []);
+
+  return { presentes, loading, registrar, confirmar };
 }

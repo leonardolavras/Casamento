@@ -134,6 +134,39 @@
   font-variant-numeric: tabular-nums;
 }
 
+.noivos-hero-stat__split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-top: 0.9rem;
+}
+
+.noivos-hero-stat__split > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.6rem 0.5rem;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.noivos-hero-stat__split span {
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.noivos-hero-stat__split strong {
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--paper);
+  font-variant-numeric: tabular-nums;
+}
+
+.noivos-hero-stat__split .noivos-hero-stat__ok {
+  color: #9fd3ad;
+}
+
 .noivos-hero-stat__bar {
   height: 6px;
   background: rgba(255, 255, 255, 0.14);
@@ -391,6 +424,52 @@
   color: var(--ink-faint);
   margin: 0 0 0.9rem;
   text-align: center;
+}
+
+.noivos-recebidos__filtros {
+  margin-bottom: 0.8rem;
+}
+
+.noivos-recebido__lado {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.35rem;
+}
+
+.confirmar-pill {
+  padding: 0.35rem 0.75rem;
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  background: var(--white);
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.confirmar-pill:hover {
+  border-color: var(--status-temos);
+  color: var(--status-temos);
+}
+
+.confirmar-pill--ok,
+.confirmar-pill--ok:hover {
+  border-color: transparent;
+  background: rgba(75, 122, 90, 0.12);
+  color: var(--status-temos);
+}
+
+.gift-row--confirmado .noivos-presente__valor {
+  color: var(--status-temos);
+}
+
+.gift-row:not(.gift-row--confirmado) .noivos-presente__valor {
+  color: var(--ink-soft);
 }
 
 .noivos-presente__valor {

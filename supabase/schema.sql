@@ -109,8 +109,13 @@ create table if not exists public.enxoval_presentes (
   valor numeric(10, 2) not null,
   nome_doador text not null,
   mensagem text,
+  -- marcado pelos noivos depois de conferir o Pix no extrato do banco
+  confirmado boolean not null default false,
   created_at timestamptz not null default now()
 );
+
+alter table public.enxoval_presentes
+  add column if not exists confirmado boolean not null default false;
 
 alter table public.enxoval_presentes enable row level security;
 

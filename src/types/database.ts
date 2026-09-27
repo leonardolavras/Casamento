@@ -25,7 +25,7 @@ export type Database = {
       enxoval_presentes: {
         Row: EnxovalPresente;
         Insert: EnxovalPresenteInput;
-        Update: Partial<EnxovalPresenteInput>;
+        Update: Partial<EnxovalPresenteInput & { confirmado: boolean }>;
         Relationships: [];
       };
     };

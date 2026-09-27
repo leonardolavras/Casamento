@@ -67,11 +67,14 @@ export function NoivosPage() {
 }
 
 type Aba = "presentes" | "recebidos";
+type FiltroRecebidos = "todos" | "pendentes" | "confirmados";
 
 function AdminPanel() {
   const { items, loading, error, addItem, updateItem, removeItem } = useEnxovalItems();
-  const { presentes, loading: loadingPresentes } = useEnxovalPresentes();
+  const { presentes, loading: loadingPresentes, confirmar } = useEnxovalPresentes();
   const [aba, setAba] = useState<Aba>("presentes");
+  const [filtroRecebidos, setFiltroRecebidos] = useState<FiltroRecebidos>("todos");
+  const [erroConfirmar, setErroConfirmar] = useState<string | null>(null);
   const [filter, setFilter] = useState<EnxovalStatus | "todos">("todos");
   const [search, setSearch] = useState("");
   const [editingItem, setEditingItem] = useState<EnxovalItem | null>(null);
@@ -87,7 +90,23 @@ function AdminPanel() {
     }
     return map;
   }, [presentes]);
-  const totalArrecadado = useMemo(() => presentes.reduce((sum, p) => sum + p.valor, 0), [presentes]);
+  const { totalArrecadado, totalConfirmado, pendentes } = useMemo(() => {
+    let total = 0;
+    let confirmado = 0;
+    let aConfirmar = 0;
+    for (const p of presentes) {
+      total += p.valor;
+      if (p.confirmado) confirmado += p.valor;
+      else aConfirmar += 1;
+    }
+    return { totalArrecadado: total, totalConfirmado: confirmado, pendentes: aConfirmar };
+  }, [presentes]);
+
+  const recebidosFiltrados = useMemo(() => {
+    if (filtroRecebidos === "pendentes") return presentes.filter((p) => !p.confirmado);
+    if (filtroRecebidos === "confirmados") return presentes.filter((p) => p.confirmado);
+    return presentes;
+  }, [presentes, filtroRecebidos]);
 
   const { totalMeta, itensCompletos } = useMemo(() => {
     let meta = 0;
@@ -134,6 +153,15 @@ function AdminPanel() {
     await removeItem(item.id);
   }
 
+  async function handleConfirmar(id: string, confirmado: boolean) {
+    setErroConfirmar(null);
+    try {
+      await confirmar(id, confirmado);
+    } catch (err) {
+      setErroConfirmar(err instanceof Error ? err.message : "Não foi possível salvar.");
+    }
+  }
+
   async function handleStatusToggle(item: EnxovalItem) {
     await updateItem(item.id, { status: item.status === "temos" ? "precisamos" : "temos" });
   }
@@ -148,6 +176,16 @@ function AdminPanel() {
       <div className="noivos-hero-stat">
         <span className="noivos-hero-stat__eyebrow">Total arrecadado</span>
         <span className="noivos-hero-stat__valor">{formatBRL(totalArrecadado)}</span>
+        <div className="noivos-hero-stat__split">
+          <div>
+            <span>Confirmado no extrato</span>
+            <strong className="noivos-hero-stat__ok">{formatBRL(totalConfirmado)}</strong>
+          </div>
+          <div>
+            <span>A confirmar</span>
+            <strong>{formatBRL(totalArrecadado - totalConfirmado)}</strong>
+          </div>
+        </div>
         {totalMeta > 0 && (
           <>
             <div className="noivos-hero-stat__bar">
@@ -177,7 +215,7 @@ function AdminPanel() {
           Presentes
         </button>
         <button type="button" role="tab" aria-selected={aba === "recebidos"} onClick={() => setAba("recebidos")}>
-          Recebidos {presentes.length > 0 && <span>{presentes.length}</span>}
+          Recebidos {pendentes > 0 && <span title={`${pendentes} a confirmar`}>{pendentes}</span>}
         </button>
       </div>
 
@@ -282,31 +320,70 @@ function AdminPanel() {
       ) : (
         <>
           <p className="noivos-presentes__aviso">
-            Confirmado pelo próprio convidado ao pagar via Pix — confira no extrato do banco.
+            O convidado avisa quando paga o Pix. Confira no extrato do banco e toque em
+            <strong> Confirmar</strong> — assim o painel mostra quanto já caiu de verdade.
           </p>
+          {erroConfirmar && <p className="enxoval__erro">{erroConfirmar}</p>}
           {loadingPresentes ? (
             <p className="enxoval__loading">Carregando...</p>
           ) : presentes.length === 0 ? (
             <p className="enxoval-section__vazio">Nenhuma contribuição registrada ainda.</p>
           ) : (
-            <ul className="gift-list">
-              {presentes.map((p) => {
-                const item = p.item_id ? itemsPorId.get(p.item_id) : undefined;
-                return (
-                  <li key={p.id} className="gift-row">
-                    <GiftThumb nome={p.item_nome} src={item?.imagem_url ?? null} />
-                    <div className="gift-row__info">
-                      <p className="gift-row__nome">{p.item_nome}</p>
-                      <p className="gift-row__meta">
-                        De <strong>{p.nome_doador}</strong> · {formatData(p.created_at)}
-                      </p>
-                      {p.mensagem && <p className="gift-row__msg">“{p.mensagem}”</p>}
-                    </div>
-                    <span className="noivos-presente__valor">{formatBRL(p.valor)}</span>
-                  </li>
-                );
-              })}
-            </ul>
+            <>
+              <div className="gift-chips noivos-recebidos__filtros">
+                {(
+                  [
+                    ["todos", "Todos", presentes.length],
+                    ["pendentes", "A confirmar", pendentes],
+                    ["confirmados", "Confirmados", presentes.length - pendentes],
+                  ] as const
+                ).map(([valor, rotulo, n]) => (
+                  <button
+                    key={valor}
+                    type="button"
+                    className={`gift-chip ${filtroRecebidos === valor ? "gift-chip--ativo" : ""}`}
+                    onClick={() => setFiltroRecebidos(valor)}
+                  >
+                    {rotulo} <span>{n}</span>
+                  </button>
+                ))}
+              </div>
+              {recebidosFiltrados.length === 0 ? (
+                <p className="enxoval-section__vazio">
+                  {filtroRecebidos === "pendentes" ? "Tudo confirmado por aqui." : "Nada por aqui ainda."}
+                </p>
+              ) : (
+                <ul className="gift-list">
+                  {recebidosFiltrados.map((p) => {
+                    const item = p.item_id ? itemsPorId.get(p.item_id) : undefined;
+                    return (
+                      <li key={p.id} className={`gift-row ${p.confirmado ? "gift-row--confirmado" : ""}`}>
+                        <GiftThumb nome={p.item_nome} src={item?.imagem_url ?? null} />
+                        <div className="gift-row__info">
+                          <p className="gift-row__nome">{p.item_nome}</p>
+                          <p className="gift-row__meta">
+                            De <strong>{p.nome_doador}</strong> · {formatData(p.created_at)}
+                          </p>
+                          {p.mensagem && <p className="gift-row__msg">“{p.mensagem}”</p>}
+                        </div>
+                        <div className="noivos-recebido__lado">
+                          <span className="noivos-presente__valor">{formatBRL(p.valor)}</span>
+                          <button
+                            type="button"
+                            className={`confirmar-pill ${p.confirmado ? "confirmar-pill--ok" : ""}`}
+                            aria-pressed={Boolean(p.confirmado)}
+                            onClick={() => handleConfirmar(p.id, !p.confirmado)}
+                            title={p.confirmado ? "Tocar para desmarcar" : "Marcar como recebido no banco"}
+                          >
+                            {p.confirmado ? "✓ Confirmado" : "Confirmar"}
+                          </button>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </>
           )}
         </>
       )}
