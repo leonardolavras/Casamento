@@ -764,6 +764,41 @@
   cursor: pointer;
 }
 
+.enxoval-modal__link {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.enxoval-modal__link input {
+  flex: 1;
+  min-width: 0;
+}
+
+.enxoval-modal__link button {
+  flex-shrink: 0;
+  padding: 0 0.95rem;
+  border: none;
+  border-radius: 12px;
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.enxoval-modal__link button:hover:not(:disabled) {
+  background: var(--accent);
+  color: var(--white);
+}
+
+.enxoval-modal__link button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .enxoval-modal__preview-linha {
   display: flex;
   align-items: center;
