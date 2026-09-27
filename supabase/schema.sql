@@ -125,7 +125,29 @@ create policy "Presentes: escrita publica"
   using (true)
   with check (true);
 
--- Habilita Supabase Realtime nas tabelas para sync em tempo real
-alter publication supabase_realtime add table public.enxoval_itens;
-alter publication supabase_realtime add table public.mural_recados;
-alter publication supabase_realtime add table public.enxoval_presentes;
+-- Habilita Supabase Realtime nas tabelas para sync em tempo real.
+-- Usa um bloco condicional porque "alter publication ... add table" não
+-- aceita "if not exists" e quebra se o script for executado mais de uma vez.
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'enxoval_itens'
+  ) then
+    alter publication supabase_realtime add table public.enxoval_itens;
+  end if;
+
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'mural_recados'
+  ) then
+    alter publication supabase_realtime add table public.mural_recados;
+  end if;
+
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'enxoval_presentes'
+  ) then
+    alter publication supabase_realtime add table public.enxoval_presentes;
+  end if;
+end $$;

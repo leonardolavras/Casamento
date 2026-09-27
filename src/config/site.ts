@@ -41,6 +41,14 @@ export const RECEPCAO: EventoInfo = {
 
 export const DRESS_CODE = "Traje social. Cores a evitar: branco.";
 
+// Lua de mel — preencha destino e foto quando estiver decidido; o card some
+// sozinho enquanto for null.
+export const HONEYMOON: { destino: string; foto: string } | null = null;
+
+// Playlist do casamento no Spotify (link de compartilhamento). O card some
+// sozinho enquanto for null.
+export const SPOTIFY_PLAYLIST_URL: string | null = null;
+
 // Dados usados para gerar o QR Code Pix na lista de presentes.
 export const PIX_KEY: string | null = "+5519995869463";
 export const PIX_TITULAR = `${COUPLE.nome1} e ${COUPLE.nome2}`;

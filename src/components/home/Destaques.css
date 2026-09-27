@@ -1,0 +1,270 @@
+.destaques {
+  padding: 80px 24px;
+  transition: opacity 1s ease, transform 1s ease;
+}
+
+.destaques__grid {
+  max-width: 1120px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 130px;
+  grid-auto-flow: dense;
+  gap: 1rem;
+}
+
+.destaque-card {
+  position: relative;
+  background: var(--white);
+  border: 1px solid var(--line);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  color: inherit;
+  text-decoration: none;
+}
+
+.destaque-card--link {
+  transition: transform 0.2s ease, box-shadow 0.25s ease;
+}
+
+.destaque-card--link:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.destaque-card__eyebrow {
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--accent);
+}
+
+.destaque-card__eyebrow--claro {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.destaque-card__titulo {
+  font-family: var(--font-serif);
+  font-size: 1.02rem;
+  font-weight: 500;
+  color: var(--ink);
+  margin: 0.2rem 0 0;
+  line-height: 1.3;
+}
+
+.destaque-card__titulo--claro {
+  color: var(--white);
+}
+
+.destaque-card__sub {
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  margin: 0.2rem 0 0;
+}
+
+/* ---- Foto ---- */
+.destaque-card--foto {
+  grid-column: span 2;
+  grid-row: span 2;
+  padding: 0;
+}
+
+.destaque-card--foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ---- Local ---- */
+.destaque-card--local {
+  grid-column: span 2;
+  padding: 0;
+  flex-direction: row;
+  align-items: stretch;
+}
+
+.destaque-card__mapa {
+  width: 40%;
+  flex-shrink: 0;
+  background:
+    repeating-linear-gradient(0deg, var(--accent-soft) 0 1px, transparent 1px 22px),
+    repeating-linear-gradient(90deg, var(--accent-soft) 0 1px, transparent 1px 22px),
+    var(--paper-alt);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.destaque-card__pin {
+  color: var(--accent);
+  filter: drop-shadow(0 2px 3px rgba(32, 29, 26, 0.15));
+}
+
+.destaque-card--local .destaque-card__body {
+  padding: 1rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+
+.destaque-card--local .destaque-card__titulo,
+.destaque-card--local .destaque-card__sub {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- Calendário ---- */
+.destaque-card--calendario {
+  grid-column: span 2;
+  padding: 0.9rem 1rem;
+  gap: 0.55rem;
+}
+
+.mini-cal {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  flex: 1;
+}
+
+.mini-cal__head {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--ink-faint);
+  text-align: center;
+}
+
+.mini-cal__cell {
+  font-size: 0.68rem;
+  color: var(--ink-soft);
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.mini-cal__cell--marcado {
+  background: var(--accent);
+  color: var(--white);
+  font-weight: 700;
+  border-radius: 50%;
+}
+
+/* ---- Dress code ---- */
+.destaque-card--dresscode {
+  grid-column: span 2;
+  padding: 1rem 1.1rem;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+.destaque-card--dresscode .destaque-card__titulo {
+  font-size: 0.92rem;
+}
+
+.destaque-card__dots {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.destaque-card__dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+/* ---- Lua de mel ---- */
+.destaque-card--lua {
+  grid-column: span 2;
+  padding: 0;
+}
+
+.destaque-card--lua img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  inset: 0;
+}
+
+.destaque-card__overlay {
+  position: relative;
+  z-index: 1;
+  margin-top: auto;
+  padding: 0.9rem 1.1rem;
+  background: linear-gradient(0deg, rgba(32, 29, 26, 0.75), transparent);
+}
+
+/* ---- Playlist ---- */
+.destaque-card--playlist {
+  grid-column: span 4;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0 1.25rem;
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+.destaque-card__play {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 780px) {
+  .destaques__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .destaque-card--foto {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+  .destaque-card--local,
+  .destaque-card--calendario,
+  .destaque-card--dresscode,
+  .destaque-card--lua {
+    grid-column: span 2;
+  }
+  .destaque-card--playlist {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 480px) {
+  .destaques {
+    padding: 60px 16px;
+  }
+  .destaques__grid {
+    grid-template-columns: 1fr;
+    grid-auto-rows: auto;
+  }
+  .destaque-card--foto {
+    grid-row: span 1;
+    aspect-ratio: 4 / 3;
+  }
+  .destaque-card--local,
+  .destaque-card--calendario,
+  .destaque-card--dresscode,
+  .destaque-card--lua,
+  .destaque-card--playlist {
+    grid-column: span 1;
+  }
+  .destaque-card--lua {
+    aspect-ratio: 4 / 3;
+  }
+}
